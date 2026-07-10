@@ -20,6 +20,35 @@
     })
     .catch(() => { $("llm-badge").textContent = "offline"; });
 
+  // LinkedIn connection state
+  let liConnected = false;
+  const liBtn = $("li-connect");
+
+  function refreshLinkedIn() {
+    fetch("/api/linkedin/status")
+      .then((r) => r.json())
+      .then((s) => {
+        if (!s.configured) { liBtn.style.display = "none"; return; }
+        liBtn.style.display = "";
+        liConnected = s.connected;
+        if (s.connected) {
+          liBtn.textContent = `LinkedIn: ${s.name} ✓ (disconnect)`;
+          liBtn.onclick = () => {
+            fetch("/api/linkedin/logout", { method: "POST" }).then(refreshLinkedIn);
+          };
+        } else {
+          liBtn.textContent = "Connect LinkedIn";
+          liBtn.onclick = () => { window.location.href = "/auth/linkedin"; };
+        }
+      })
+      .catch(() => {});
+  }
+  refreshLinkedIn();
+
+  // Surface OAuth errors passed back as ?li_error=...
+  const liError = new URLSearchParams(window.location.search).get("li_error");
+  if (liError) setError("LinkedIn sign-in failed: " + liError);
+
   function setError(msg) {
     errorBox.textContent = msg;
     errorBox.classList.toggle("visible", !!msg);
@@ -67,7 +96,11 @@
       card.innerHTML = `
         <div class="post-header">
           <h3>Variant ${i + 1}</h3>
-          <button class="btn btn-ghost btn-sm copy-btn">Copy text</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm copy-btn">Copy text</button>
+            <button class="btn btn-ghost btn-sm save-btn">Save to library</button>
+            <button class="btn btn-primary btn-sm li-post-btn">Post to LinkedIn</button>
+          </div>
         </div>
         ${imgHtml}
         <div class="post-body">${esc(d.text)}</div>
@@ -83,6 +116,57 @@
             copyBtn.classList.remove("copied");
           }, 1800);
         });
+      });
+
+      const saveBtn = card.querySelector(".save-btn");
+      saveBtn.addEventListener("click", async () => {
+        saveBtn.disabled = true;
+        try {
+          const r = await fetch("/api/library/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(d),
+          });
+          if (!r.ok) throw new Error((await r.json()).error || "Save failed");
+          saveBtn.textContent = "Saved ✓";
+          saveBtn.classList.add("copied");
+        } catch (e) {
+          saveBtn.disabled = false;
+          setError(e.message);
+        }
+      });
+
+      const liPostBtn = card.querySelector(".li-post-btn");
+      liPostBtn.addEventListener("click", async () => {
+        if (!liConnected) {
+          if (confirm("You need to connect your LinkedIn account first. Connect now?"))
+            window.location.href = "/auth/linkedin";
+          return;
+        }
+        if (!confirm("Post this draft to your LinkedIn profile? It will be publicly visible."))
+          return;
+        liPostBtn.disabled = true;
+        liPostBtn.textContent = "Posting…";
+        try {
+          const r = await fetch("/api/linkedin/post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: d.text,
+              image_src: d.image ? d.image.src : "",
+              draft_id: d.id || "",
+            }),
+          });
+          const res = await r.json();
+          if (!r.ok) throw new Error(res.error || "Posting failed");
+          liPostBtn.textContent = res.with_image ? "Posted with image ✓" : "Posted ✓";
+          liPostBtn.classList.add("copied");
+        } catch (e) {
+          liPostBtn.disabled = false;
+          liPostBtn.textContent = "Post to LinkedIn";
+          setError(e.message);
+          if (String(e.message).includes("reconnect")) refreshLinkedIn();
+        }
       });
 
       results.appendChild(card);

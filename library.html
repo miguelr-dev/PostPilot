@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library — PostPilot</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="logo" href="/">Post<span>Pilot</span></a>
+      <div class="nav-links">
+        <a href="/app">Generator</a>
+        <a class="active" href="/library">Library</a>
+        <button id="li-connect" class="btn btn-ghost btn-sm" style="display:none">Connect LinkedIn</button>
+      </div>
+    </nav>
+
+    <div style="padding: 36px 0 80px;">
+      <h1 style="font-size:1.5rem; margin-bottom:6px;">Your drafts</h1>
+      <p style="color:var(--muted); margin-bottom:28px;">Drafts you save from the generator live here. Post the keepers, delete the rest.</p>
+
+      <div id="error-box" class="error-box"></div>
+      <div id="list"></div>
+      <div id="empty-state" class="panel" style="display:none; text-align:center; color:var(--muted);">
+        Nothing saved yet. <a href="/app">Generate some posts</a> and hit "Save to library" on the ones worth keeping.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">Posting publishes to your connected LinkedIn profile — review before you click.</div>
+  </footer>
+
+  <script>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    let liConnected = false;
+
+    function setError(msg) {
+      $("error-box").textContent = msg;
+      $("error-box").classList.toggle("visible", !!msg);
+    }
+
+    function esc(s) {
+      const d = document.createElement("div");
+      d.textContent = s == null ? "" : String(s);
+      return d.innerHTML;
+    }
+
+    const liBtn = $("li-connect");
+    function refreshLinkedIn() {
+      fetch("/api/linkedin/status").then(r => r.json()).then(s => {
+        if (!s.configured) { liBtn.style.display = "none"; return; }
+        liBtn.style.display = "";
+        liConnected = s.connected;
+        if (s.connected) {
+          liBtn.textContent = `LinkedIn: ${s.name} ✓`;
+          liBtn.onclick = null;
+        } else {
+          liBtn.textContent = "Connect LinkedIn";
+          liBtn.onclick = () => { window.location.href = "/auth/linkedin"; };
+        }
+      }).catch(() => {});
+    }
+    refreshLinkedIn();
+
+    function card(d) {
+      const el = document.createElement("div");
+      el.className = "post-card";
+      const posted = d.status === "posted";
+      const when = (d.created || "").replace("T", " ").slice(0, 16);
+
+      let imgHtml = "";
+      let metaImg = "";
+      if (d.image && d.image.src) {
+        imgHtml = `<img class="post-image" src="${esc(d.image.src)}" alt="Post image" onerror="this.style.display='none'">`;
+        metaImg = `<br>Image: ${esc(d.image.source)} — ${esc(d.image.license)} — ${esc(d.image.attribution)}`;
+      }
+      const srcLink = d.source && d.source.url
+        ? `<a href="${esc(d.source.url)}" target="_blank" rel="noopener">${esc(d.source.title || d.source.url)}</a>`
+        : esc((d.source && d.source.title) || "n/a");
+
+      el.innerHTML = `
+        <div class="post-header">
+          <h3>${when} ${posted ? '<span class="badge ok">posted</span>' : '<span class="badge">draft</span>'}</h3>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm copy-btn">Copy</button>
+            <button class="btn btn-primary btn-sm post-btn" ${posted ? "disabled" : ""}>${posted ? "Posted ✓" : "Post to LinkedIn"}</button>
+            <button class="btn btn-ghost btn-sm del-btn">Delete</button>
+          </div>
+        </div>
+        ${imgHtml}
+        <div class="post-body">${esc(d.text)}</div>
+        <div class="post-meta">Based on: ${srcLink} (${esc((d.source && d.source.date) || "recent")})${metaImg}</div>`;
+
+      el.querySelector(".copy-btn").addEventListener("click", (e) => {
+        navigator.clipboard.writeText(d.text).then(() => {
+          e.target.textContent = "Copied!";
+          setTimeout(() => { e.target.textContent = "Copy"; }, 1500);
+        });
+      });
+
+      el.querySelector(".del-btn").addEventListener("click", async () => {
+        if (!confirm("Delete this draft permanently?")) return;
+        await fetch(`/api/library/${d.id}/delete`, { method: "POST" });
+        load();
+      });
+
+      const postBtn = el.querySelector(".post-btn");
+      if (!posted) postBtn.addEventListener("click", async () => {
+        if (!liConnected) {
+          if (confirm("Connect your LinkedIn account first?"))
+            window.location.href = "/auth/linkedin";
+          return;
+        }
+        if (!confirm("Post this to your LinkedIn profile? It will be publicly visible.")) return;
+        postBtn.disabled = true;
+        postBtn.textContent = "Posting…";
+        try {
+          const r = await fetch("/api/linkedin/post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: d.text, image_src: d.image ? d.image.src : "", draft_id: d.id }),
+          });
+          const res = await r.json();
+          if (!r.ok) throw new Error(res.error || "Posting failed");
+          load();
+        } catch (e) {
+          postBtn.disabled = false;
+          postBtn.textContent = "Post to LinkedIn";
+          setError(e.message);
+        }
+      });
+
+      return el;
+    }
+
+    async function load() {
+      setError("");
+      try {
+        const r = await fetch("/api/library");
+        const data = await r.json();
+        const list = $("list");
+        list.innerHTML = "";
+        $("empty-state").style.display = data.drafts.length ? "none" : "";
+        data.drafts.forEach(d => list.appendChild(card(d)));
+      } catch (e) {
+        setError("Could not load the library.");
+      }
+    }
+    load();
+  })();
+  </script>
+</body>
+</html>

@@ -176,7 +176,9 @@ def build_voice_profile(voice_signals):
             raw = llm_complete("Read the material and return ONLY a JSON object with keys "
                 "`summary` (2-3 sentences), `themes` (array), `opinions` (array of stances "
                 "they actually expressed), `style_notes` (array about sentence length, tone, "
-                "hooks, hashtag habits).\n\n" + corpus,
+                "hooks, hashtag habits). In style_notes, capture voice as vocabulary, rhythm "
+                "and attitude - IGNORE mechanical sloppiness like lowercase typing or missing "
+                "apostrophes; that comes from quick note-taking, not their published style.\n\n" + corpus,
                 system="You profile how a person thinks and writes so someone could draft in "
                 "their voice. Be specific. Don't invent beliefs.", max_tokens=1200, temperature=0.3)
             d = _loads_lenient(raw)
@@ -228,15 +230,18 @@ def _keywords(text):
 # ---------------------------------------------------------------------------
 #  IMAGE SOURCING (license-safe: Openverse free / Pexels optional)
 # ---------------------------------------------------------------------------
-def build_image_query(topic):
+def build_image_query(topic, post_text=""):
     seed = topic.primary.title or topic.primary.short(80)
+    ctx = f"HEADLINE: {seed}"
+    if post_text:
+        ctx += f"\n\nTHE POST THE IMAGE WILL ACCOMPANY:\n{post_text[:500]}"
     if llm_available():
         try:
             raw = llm_complete(
                 "Give a SHORT stock-photo search query (3-6 words, generic and "
                 "conceptual - NO named people, companies, or logos, so it's "
-                "license-safe) that visually fits this news, plus one line of alt "
-                'text. Return ONLY JSON {"query":..., "alt":...}.\n\nHEADLINE: ' + seed,
+                "license-safe) that visually fits the post below, plus one line "
+                'of alt text. Return ONLY JSON {"query":..., "alt":...}.\n\n' + ctx,
                 system="You choose safe, relevant stock-photo search terms.",
                 max_tokens=200, temperature=0.3)
             d = _loads_lenient(raw)
@@ -245,46 +250,69 @@ def build_image_query(topic):
         except Exception as e:
             print(f"  [warn] image query via LLM failed ({e}); using keywords.")
     return (" ".join(list(_keywords(seed))[:4]) or "technology"), seed
-def _search_pexels(query):
-    if requests is None or not PEXELS_API_KEY: return None
+def _search_pexels(query, count=1):
+    if requests is None or not PEXELS_API_KEY: return []
     try:
         r = requests.get("https://api.pexels.com/v1/search",
             headers={"Authorization": PEXELS_API_KEY},
-            params={"query": query, "per_page": 1, "orientation": "landscape"}, timeout=20)
+            params={"query": query, "per_page": count, "orientation": "landscape"}, timeout=20)
         r.raise_for_status()
-        photos = r.json().get("photos", [])
-        if not photos: return None
-        p = photos[0]
-        return {"url": p["src"]["large"], "source": "Pexels",
+        return [{"url": p["src"]["large"], "source": "Pexels",
             "license": "Pexels License (free commercial use; attribution optional)",
             "attribution": f"Photo by {p.get('photographer','')} on Pexels",
-            "page": p.get("url", "")}
+            "page": p.get("url", ""), "alt": p.get("alt", "")}
+            for p in r.json().get("photos", [])]
     except Exception as e:
         print(f"  [warn] Pexels search failed ({e}).")
-        return None
-def _search_openverse(query):
-    if requests is None: return None
+        return []
+def _search_openverse(query, count=1):
+    if requests is None: return []
     try:
         r = requests.get("https://api.openverse.org/v1/images/",
-            params={"q": query, "page_size": 1, "license_type": "commercial"},
+            params={"q": query, "page_size": count, "license_type": "commercial"},
             headers={"User-Agent": "linkedin-post-generator"}, timeout=20)
         r.raise_for_status()
-        results = r.json().get("results", [])
-        if not results: return None
-        it = results[0]
-        lic = f"{it.get('license','')} {it.get('license_version','')}".strip().upper()
-        return {"url": it.get("url", ""), "source": it.get("source", "Openverse"),
-            "license": f"CC {lic}".strip() + " (verify credit requirement)",
-            "attribution": it.get("attribution") or
-                f"{it.get('creator','Unknown')} via {it.get('source','Openverse')}",
-            "page": it.get("foreign_landing_url", "")}
+        out = []
+        for it in r.json().get("results", []):
+            lic = f"{it.get('license','')} {it.get('license_version','')}".strip().upper()
+            out.append({"url": it.get("url", ""), "source": it.get("source", "Openverse"),
+                "license": f"CC {lic}".strip() + " (verify credit requirement)",
+                "attribution": it.get("attribution") or
+                    f"{it.get('creator','Unknown')} via {it.get('source','Openverse')}",
+                "page": it.get("foreign_landing_url", ""),
+                "alt": it.get("title", "")})
+        return out
     except Exception as e:
         print(f"  [warn] Openverse search failed ({e}).")
-        return None
-def find_image(query, index):
-    """Return dict {local_path, source, license, attribution, page, url, query} or None."""
-    info = _search_pexels(query) or _search_openverse(query)
-    if not info: return None
+        return []
+def _pick_best_image(candidates, context):
+    """Ask the LLM which candidate's description best matches the post."""
+    if len(candidates) < 2 or not context or not llm_available():
+        return candidates[0]
+    try:
+        lines = "\n".join(f"{i}. {c.get('alt') or c.get('page') or c.get('url')}"
+                          for i, c in enumerate(candidates))
+        raw = llm_complete(
+            f"THE POST:\n{context[:400]}\n\nCANDIDATE IMAGES (descriptions):\n"
+            f"{lines}\n\nReply with ONLY the number of the image that best "
+            "matches the post's topic and tone.",
+            system="You pick the most relevant stock photo. Output one number.",
+            max_tokens=10, temperature=0.0)
+        m = re.search(r"\d+", raw)
+        i = int(m.group(0)) if m else 0
+        return candidates[i] if 0 <= i < len(candidates) else candidates[0]
+    except Exception as e:
+        print(f"  [warn] image ranking failed ({e}); using first result.")
+        return candidates[0]
+def find_image(query, index, context="", exclude=None):
+    """Return dict {local_path, source, license, attribution, page, url, query} or None.
+    `exclude` is a set of image URLs already used by other variants."""
+    candidates = _search_pexels(query, 15) or _search_openverse(query, 15)
+    if exclude:
+        fresh = [c for c in candidates if c.get("url") not in exclude]
+        if fresh: candidates = fresh
+    if not candidates: return None
+    info = _pick_best_image(candidates, context)
     info["query"] = query
     info["local_path"] = ""
     if requests is not None and info.get("url"):
@@ -324,11 +352,26 @@ just report it.
 - {TONE_GUIDE.get(s.tone, TONE_GUIDE['insightful'])}
 - Length: {LENGTH_GUIDE.get(s.length, LENGTH_GUIDE['medium'])}
 - Tie the news to one of their themes or opinions explicitly.
-- Short paragraphs, blank line between them. Plain text only - NO markdown.
+- Flawless grammar, spelling, and punctuation. Complete sentences only -
+  no fragments unless used deliberately once for punch.
+- CRITICAL: their "voice" means their ideas, opinions, and vocabulary - NOT
+  their typing habits. Even if their source material is lowercase, missing
+  apostrophes, or sloppily punctuated, YOU always write with standard
+  capitalization (every sentence starts with a capital letter) and correct
+  apostrophes (don't, isn't, they're). No exceptions.
+- Structure: paragraphs of 1-3 sentences each, with a blank line between
+  EVERY paragraph. Never write a wall of text. One idea per paragraph, in
+  logical order: hook, context, insight, takeaway, question.
+- Plain text only - NO markdown, NO bullet characters, NO emoji spam.
 - End with a genuine question. Finish with 3-5 hashtags on the last line.
+- Before finishing, re-read the post and fix any grammatical or flow issues.
 - Output ONLY the post text."""
             return llm_complete(prompt, system="You are a ghostwriter who writes authentic, "
-                "human LinkedIn posts. You never sound like an AI.",
+                "human LinkedIn posts. You never sound like an AI. You ALWAYS use standard "
+                "capitalization and punctuation: every sentence starts with a capital letter, "
+                "contractions have apostrophes (don't, isn't, they're), proper nouns are "
+                "capitalized (Microsoft, ChatGPT, AI). A person's voice is their ideas and "
+                "word choice, never sloppy mechanics.",
                 max_tokens=getattr(s, "max_tokens", 700), temperature=0.8)
         except Exception as e:
             print(f"  [warn] LLM generation failed ({e}); using template.")
@@ -347,6 +390,11 @@ def format_post(text, max_chars=2900):
     text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"\1 (\2)", text)
     text = text.replace("`", "")
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    # Safety net: capitalize the first letter of every sentence/paragraph
+    # and fix standalone "i", even if the model mimicked lowercase notes.
+    text = re.sub(r"(^|[.!?]\s+|\n\s*)([a-z])",
+                  lambda m: m.group(1) + m.group(2).upper(), text)
+    text = re.sub(r"\bi\b", "I", text)
     if len(text) > max_chars: text = text[:max_chars].rsplit("\n", 1)[0].rstrip()
     return text
 def save_run(drafts, s: Settings):
