@@ -18,8 +18,11 @@
       </div>
     </nav>
 
-    <div style="padding: 36px 0 80px;">
-      <h1 style="font-size:1.5rem; margin-bottom:6px;">Your drafts</h1>
+    <div class="lib-wrap" style="padding: 36px 0 80px;">
+      <div class="lib-head">
+        <h1>Your drafts</h1>
+        <span class="lib-count" id="lib-count" style="display:none"></span>
+      </div>
       <p style="color:var(--muted); margin-bottom:28px;">Drafts you save from the generator live here. Post the keepers, delete the rest.</p>
 
       <div id="error-box" class="error-box"></div>
@@ -146,6 +149,14 @@
         const list = $("list");
         list.innerHTML = "";
         $("empty-state").style.display = data.drafts.length ? "none" : "";
+        const count = $("lib-count");
+        if (data.drafts.length) {
+          const posted = data.drafts.filter(d => d.status === "posted").length;
+          count.textContent = `${data.drafts.length} draft${data.drafts.length === 1 ? "" : "s"} · ${posted} posted`;
+          count.style.display = "";
+        } else {
+          count.style.display = "none";
+        }
         data.drafts.forEach(d => list.appendChild(card(d)));
       } catch (e) {
         setError("Could not load the library.");

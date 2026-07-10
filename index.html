@@ -21,31 +21,60 @@
     </nav>
 
     <section class="hero">
-      <h1>LinkedIn posts that sound like <em>you</em>, powered by today's AI news</h1>
-      <p>Paste a meeting transcript or your notes. PostPilot learns your voice, pulls the latest AI headlines, and drafts ready-to-publish posts — each with a license-safe image attached.</p>
+      <div class="hero-orbs" aria-hidden="true"><div class="hero-orb"></div><div class="hero-orb"></div></div>
+      <h1>LinkedIn posts that sound like <em>you</em>, powered by today's news</h1>
+      <p>Paste a meeting transcript or your notes on any topic. PostPilot learns your voice, finds the latest headlines about what you care about, and drafts ready-to-publish posts — each with a license-safe image attached.</p>
       <a class="btn btn-primary" href="/app">Generate posts</a>
     </section>
 
-    <section class="features" id="features">
-      <div class="card">
-        <span class="icon">🗞️</span>
-        <h3>Live news, not stale takes</h3>
-        <p>Pulls fresh AI stories from news feeds, Hacker News, and arXiv within your chosen lookback window, so every post reacts to something current.</p>
-      </div>
-      <div class="card">
-        <span class="icon">🎙️</span>
-        <h3>Your actual voice</h3>
-        <p>Builds a profile of your themes, opinions, and writing style from a transcript or notes — then ghostwrites as you, not as a generic AI.</p>
-      </div>
-      <div class="card">
-        <span class="icon">🖼️</span>
-        <h3>License-safe images</h3>
-        <p>Every draft comes with a matching stock photo from Openverse or Pexels, with license and attribution details included.</p>
-      </div>
-      <div class="card">
-        <span class="icon">⚙️</span>
-        <h3>Tuned to your taste</h3>
-        <p>Pick tone (insightful, casual, bold, technical), length, and how many variants you want. Copy the one you like straight into LinkedIn.</p>
+    <section class="lin-section" id="features">
+      <h2 class="lin-head"><strong>A new way to show up on LinkedIn.</strong> Purpose-built for people with opinions but no time, PostPilot turns your notes and today's news into posts that sound like you.</h2>
+
+      <div class="lin-features">
+        <div class="lin-item">
+          <div class="lin-fig">FIG 0.1</div>
+          <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="52" y="52" width="140" height="88" rx="9" stroke="#333c54" opacity="0.35"/>
+            <rect x="42" y="42" width="140" height="88" rx="9" stroke="#333c54" opacity="0.6"/>
+            <rect x="32" y="32" width="140" height="88" rx="9" stroke="#4a5474" fill="#12151d"/>
+            <circle cx="50" cy="50" r="4" fill="#4f8ff7" opacity="0.9"/>
+            <line x1="62" y1="50" x2="150" y2="50" stroke="#4a5474" stroke-linecap="round"/>
+            <line x1="46" y1="68" x2="156" y2="68" stroke="#333c54" stroke-linecap="round"/>
+            <line x1="46" y1="82" x2="140" y2="82" stroke="#333c54" stroke-linecap="round"/>
+            <line x1="46" y1="96" x2="150" y2="96" stroke="#333c54" stroke-linecap="round"/>
+          </svg>
+          <h3>Reacts to live news</h3>
+          <p>Reads your notes, works out what you care about — AI, economics, real estate, anything — and pulls fresh headlines on exactly those topics.</p>
+        </div>
+
+        <div class="lin-item">
+          <div class="lin-fig">FIG 0.2</div>
+          <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="66" cy="80" r="26" stroke="#4a5474"/>
+            <circle cx="66" cy="72" r="9" stroke="#4a5474"/>
+            <path d="M50 96 a16 16 0 0 1 32 0" stroke="#4a5474"/>
+            <rect x="112" y="66" width="5" height="28" rx="2.5" fill="#333c54"/>
+            <rect x="124" y="52" width="5" height="56" rx="2.5" fill="#4a5474"/>
+            <rect x="136" y="40" width="5" height="80" rx="2.5" fill="#4f8ff7" opacity="0.85"/>
+            <rect x="148" y="56" width="5" height="48" rx="2.5" fill="#4a5474"/>
+            <rect x="160" y="68" width="5" height="24" rx="2.5" fill="#333c54"/>
+          </svg>
+          <h3>Writes in your voice</h3>
+          <p>Learns your themes, opinions, and rhythm from a transcript or notes — then ghostwrites as you, with clean grammar and structure.</p>
+        </div>
+
+        <div class="lin-item">
+          <div class="lin-fig">FIG 0.3</div>
+          <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="36" y="30" width="120" height="100" rx="9" stroke="#4a5474" fill="#12151d"/>
+            <circle cx="70" cy="60" r="10" stroke="#333c54"/>
+            <path d="M44 112 L78 82 L98 98 L122 72 L148 96" stroke="#4a5474" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="140" y="92" width="44" height="38" rx="8" fill="#4f8ff7" opacity="0.9"/>
+            <path d="M152 111 l8 8 l14 -16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <h3>Ships with one click</h3>
+          <p>A license-safe image is picked to match each draft. Save the keepers to your library and post straight to LinkedIn.</p>
+        </div>
       </div>
     </section>
 
@@ -54,7 +83,7 @@
       <ol>
         <li><strong>Paste your material</strong>A meeting transcript, voice memo transcription, or rough notes — anything in your own words.</li>
         <li><strong>Pick your settings</strong>Tone, length, number of variants, and how far back to look for news.</li>
-        <li><strong>We do the reading</strong>Fresh AI news is gathered and matched against your themes and opinions.</li>
+        <li><strong>We do the reading</strong>Fresh news about your topics is gathered and matched against your themes and opinions.</li>
         <li><strong>Copy and post</strong>Review the drafts, grab the image, paste into LinkedIn. Done.</li>
       </ol>
 
@@ -71,7 +100,7 @@
 
     <section class="examples" id="examples">
       <h2>Example output</h2>
-      <p class="examples-note">Sample drafts generated from a product-meeting transcript, reacting to real AI headlines. Each comes with a license-safe stock image and attribution.</p>
+      <p class="examples-note">Sample drafts on three different topics — each generated from short notes, reacting to a real headline, with a license-safe stock image and attribution.</p>
       <div class="examples-grid">
 
         <div class="post-card">
@@ -103,21 +132,43 @@ Source: https://www.theverge.com/ai-copilot-launches
             <h3>Bold · 60–100 words</h3>
             <span class="badge">example</span>
           </div>
-          <img class="post-image" src="https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Close-up of a blue circuit board" onerror="this.style.display='none'">
-          <div class="post-body">Hot take: your product hasn't earned an AI chatbot yet.
+          <img class="post-image" src="https://images.pexels.com/photos/3483098/pexels-photo-3483098.jpeg?auto=compress&cs=tinysrgb&w=800" alt="US dollar bills" onerror="this.style.display='none'">
+          <div class="post-body">Hot take: the new budgeting app of the week won't fix anyone's finances.
 
-New research this week shows most users abandon in-app assistants within two sessions. Not surprising. We keep bolting AI onto flows before nailing the boring basics — empty states, error messages, onboarding that makes sense.
+This week's survey says 60% of users abandon finance apps within a month. Of course they do. Tools don't change behavior — defaults do.
 
-AI should remove steps. Not add a shiny thing you have to talk to.
+The winning strategy still fits on an index card: spend less than you earn, automate the savings, buy boring index funds, wait.
 
-No sacred AI cows. If it doesn't move activation, it goes.
+The hardest part was never knowledge. It's patience.
 
-What would you cut from your product tomorrow?
+What's the money habit that actually stuck for you?
 
-Source: https://venturebeat.com/ai-assistant-retention-study
+Source: https://www.cnbc.com/finance-app-retention-survey
 
-#AI #ProductStrategy #UX</div>
-          <div class="post-meta">Based on: In-app AI assistant retention study (example) · Image: Pexels — Pexels License (free commercial use) — Photo by Pixabay on Pexels</div>
+#PersonalFinance #Investing #MoneyHabits</div>
+          <div class="post-meta">Based on: Finance app retention survey (example) · Image: Pexels — Pexels License (free commercial use) — Photo by John Guccione on Pexels</div>
+        </div>
+
+        <div class="post-card">
+          <div class="post-header">
+            <h3>Casual · 100–200 words</h3>
+            <span class="badge">example</span>
+          </div>
+          <img class="post-image" src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800" alt="House with a front lawn" onerror="this.style.display='none'">
+          <div class="post-body">Everyone keeps asking me when to buy a house, like there's a magic date circled on some calendar.
+
+This week's housing report shows inventory finally climbing in most metros. Good news! And also — it changes almost nothing about the real question.
+
+Buy when your life needs it and the math works. That's it. Renting isn't throwing money away; it's paying for flexibility. Owning isn't a guaranteed investment; it's a lifestyle choice with a mortgage attached.
+
+The thing nobody wants to hear: we massively underbuild housing, then act shocked at prices. Zoning reform would do more for affordability than any first-time-buyer program.
+
+Are you waiting on the market, or waiting on your life?
+
+Source: https://www.realtor.com/june-housing-inventory-report
+
+#RealEstate #Housing #HomeBuying</div>
+          <div class="post-meta">Based on: June housing inventory report (example) · Image: Pexels — Pexels License (free commercial use) — Photo by Binyamin Mellish on Pexels</div>
         </div>
 
       </div>
@@ -270,8 +321,8 @@ Source: https://venturebeat.com/ai-assistant-retention-study
     const stage = document.getElementById("demo-stage");
     if (!stage) return;
     const NOTES = "Everyone wants to bolt AI onto everything. I'd rather ship one feature that quietly saves 30 seconds...";
-    const PROGRESS = ["Gathering live AI news...", "Building your voice profile...",
-                      "Matching news to your topics...", "Writing variant 1 of 1...", "Finding image for variant 1..."];
+    const PROGRESS = ["Reading your notes...", "Gathering live news about your topics...",
+                      "Building your voice profile...", "Writing variant 1 of 1...", "Finding image for variant 1..."];
     const IMG = "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=500";
     const POST_TEXT = `Most AI copilots are demos, not products.<br><br>` +
       `A demo needs to impress once. A product needs to work the thousandth time, ` +
@@ -353,6 +404,22 @@ Source: https://venturebeat.com/ai-assistant-retention-study
         await linkedinStage();
       }
     })();
+  })();
+
+  // Subtle scroll-reveal for sections
+  (() => {
+    const els = document.querySelectorAll(
+      ".lin-item, .steps li, .examples .post-card, .demo-wrap, .lin-head, .steps h2, .examples h2");
+    els.forEach((el, i) => {
+      el.classList.add("reveal");
+      el.style.transitionDelay = (i % 3) * 60 + "ms";
+    });
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add("revealed"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    els.forEach((el) => obs.observe(el));
   })();
   </script>
 </body>

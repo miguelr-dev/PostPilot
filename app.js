@@ -1,6 +1,20 @@
 /* PostPilot generator page logic */
 (() => {
   const $ = (id) => document.getElementById(id);
+
+  // Sample transcripts by topic - opinionated notes the AI can learn a voice from
+  const SAMPLES = {
+    ai: `Everyone wants to bolt AI onto their product, but most of it is theater. I'd rather ship one AI feature that quietly saves users thirty seconds than five that feel like managing a junior intern. The gap between a demo that wows in a meeting and something that survives real users on a stressed Tuesday morning is enormous. If it doesn't move activation, rip it out. No sacred AI cows.`,
+    economics: `Everyone's watching the Fed like it's the only thing that matters, but the real story is in small business credit. When local businesses can't borrow affordably, hiring freezes long before the headlines catch up. I think we pay too much attention to the stock market and too little to Main Street indicators. GDP numbers hide more than they reveal about how regular people are actually doing.`,
+    startups: `Most startups don't die from competition, they die from building something nobody asked for. Talk to twenty customers before you write a line of code. I'm also convinced raising too much money too early kills more companies than raising too little - constraints force focus. Revenue is the only validation that matters. Everything else is applause.`,
+    marketing: `Brand isn't your logo, it's what people say about you when you're not in the room. Most companies pump out content nobody reads instead of making one thing people actually share. I believe boring industries are the biggest branding opportunity - if everyone in your category sounds the same, sounding human is a superpower. Metrics without a story are just noise.`,
+    careers: `Job descriptions asking for five years of experience in a three-year-old technology tell you everything about broken hiring. I believe skills beat credentials, and portfolios beat resumes. The best career moves I've seen came from people who built things in public instead of quietly applying to hundreds of roles. Networking isn't schmoozing - it's being useful to people before you need them.`,
+    leadership: `The best managers I've had did less, not more - fewer meetings, clearer priorities, faster decisions. Micromanagement is fear wearing a productivity costume. I think most companies promote their best individual contributors into management and lose twice: a great builder gone, a mediocre manager gained. Trust is the only real productivity hack.`,
+    finance: `Budgeting apps don't fix spending problems any more than scales fix eating problems - behavior beats tools every time. I think the personal finance industry profits from complexity, when the winning strategy fits on an index card: spend less than you earn, automate savings, buy boring index funds, wait. The hardest part isn't knowledge, it's patience.`,
+    health: `We treat sleep like a luxury and then wonder why burnout is everywhere. I'm convinced most workplace wellness programs are box-ticking - a meditation app subscription doesn't fix a culture of 9pm emails. Walking meetings, actual lunch breaks, and respecting time off would do more than any perk. Health isn't a productivity hack, it's the foundation everything else sits on.`,
+    climate: `Sustainability theater drives me crazy - companies celebrating paper straws while their supply chain burns coal. Real climate progress is boring: better insulation, efficient logistics, cleaner grids. I think the biggest lever isn't individual guilt, it's procurement - when big buyers demand cleaner suppliers, whole industries move. Progress beats purity.`,
+    realestate: `Everyone asks when to buy like there's a magic date, but the honest answer is: when your life needs it and the math works. Rent versus buy isn't a moral question. I think we massively underbuild housing and then act shocked at prices - zoning reform would do more for affordability than any first-time-buyer subsidy. Location risk is the most underpriced factor in real estate.`,
+  };
   const btn = $("generate-btn");
   const progress = $("progress");
   const progressText = $("progress-text");
@@ -201,12 +215,24 @@
     }, 1200);
   }
 
+  // Topic dropdown fills the notes box with an editable sample
+  $("sample-topic").addEventListener("change", () => {
+    const key = $("sample-topic").value;
+    if (!key) return;
+    const box = $("transcript");
+    if (box.value.trim() &&
+        !confirm("Replace your current notes with the sample?")) {
+      $("sample-topic").value = "";
+      return;
+    }
+    box.value = SAMPLES[key] || "";
+  });
+
   btn.addEventListener("click", async () => {
     setError("");
     const transcript = $("transcript").value.trim();
-    const useSample = $("use-sample").checked;
-    if (!transcript && !useSample) {
-      setError("Paste a transcript or check “Use built-in sample transcript”.");
+    if (!transcript) {
+      setError("Paste some notes, or pick a sample topic from the dropdown.");
       return;
     }
     setBusy(true);
@@ -217,7 +243,6 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcript,
-          use_sample: useSample,
           tone: $("tone").value,
           word_min: Math.max(0, Math.min(3000, parseInt($("wordmin").value, 10) || 100)),
           word_max: Math.max(0, Math.min(3000, parseInt($("wordmax").value, 10) || 200)),

@@ -153,6 +153,21 @@ def _serialize_draft(text, topic, img, draft_id):
     return d
 
 
+def _resolve_url(url):
+    """Follow Google News redirect links to the real article URL."""
+    if not url or "news.google.com" not in url:
+        return url
+    try:
+        r = requests.get(url, timeout=10, allow_redirects=True,
+                         headers={"User-Agent": "Mozilla/5.0"})
+        final = r.url
+        if final and "news.google.com" not in final:
+            return final
+    except Exception:
+        pass
+    return url
+
+
 def _append_source(text, url):
     """Add the source article link to the post text, just above the hashtags."""
     if not url:
@@ -168,7 +183,7 @@ def _append_source(text, url):
 def _rank_topics_for_voice(content, voice, transcript_text, n):
     """Boost the weight of news signals most relevant to the user's
     themes/opinions so select_topics() favors them over generic top headlines."""
-    primaries = [s for s in content if s.kind in ("ai_news", "arxiv")] or list(content)
+    primaries = [s for s in content if s.kind in ("ai_news", "arxiv", "news")] or list(content)
     if len(primaries) <= n:
         return
     interests = "; ".join((voice.themes or []) + (voice.opinions or []))
@@ -212,12 +227,20 @@ def _rank_topics_for_voice(content, voice, transcript_text, n):
 
 def _run_job(job_id, settings, transcript_text):
     try:
-        _job_update(job_id, progress="Gathering live AI news...")
-        content, voice_signals = g.gather_signals(settings, transcript_text)
+        _job_update(job_id, progress="Reading your notes...")
+        queries = []
+        try:
+            queries = g.derive_search_queries(transcript_text)
+        except Exception as e:
+            print(f"  [warn] could not derive topics ({e}).")
+
+        _job_update(job_id, progress="Gathering live news about your topics...")
+        content, voice_signals = g.gather_signals(settings, transcript_text,
+                                                  queries=queries or None)
         if not content:
             _job_update(job_id, status="error",
-                        error="No news signals found. Check the server's internet "
-                              "connection and that feedparser is installed.")
+                        error="No news found for your topics in this lookback "
+                              "window. Try a longer lookback or broader notes.")
             return
 
         _job_update(job_id, progress="Building your voice profile...")
@@ -235,6 +258,7 @@ def _run_job(job_id, settings, transcript_text):
         used_images = set()
         for i, topic in enumerate(topics, 1):
             _job_update(job_id, progress=f"Writing variant {i} of {len(topics)}...")
+            topic.primary.url = _resolve_url(topic.primary.url)
             text = g.format_post(g.generate_post(topic, voice, settings),
                                  max_chars=getattr(settings, "max_chars", 2900))
             text = _append_source(text, topic.primary.url)
@@ -321,8 +345,8 @@ def api_generate():
     lookback = max(1, min(24 * 365 * 10, lb_value * unit_hours[unit]))
 
     transcript = (data.get("transcript") or "").strip()
-    if data.get("use_sample"):
-        transcript = g.SAMPLE_TRANSCRIPT
+    if not transcript:
+        return jsonify({"error": "Paste a transcript or some notes first."}), 400
     settings = g.Settings(tone=tone, length=length_key, variants=variants,
                           news_lookback_hours=lookback,
                           max_news_items=12,
