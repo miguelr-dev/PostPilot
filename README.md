@@ -39,6 +39,7 @@ Set these as environment variables before starting the server:
 | `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` | From your LinkedIn developer app — enables "Connect LinkedIn" and one-click posting |
 | `BASE_URL` | Public URL of the site (e.g. `https://postpilot-nsks.onrender.com`), used for the OAuth redirect. Default: `http://localhost:5000` |
 | `SECRET_KEY` | Random string for login sessions (generate one; without it, logins reset on every server restart) |
+| `DATABASE_URL` | Postgres connection string. When set, the drafts library uses Postgres (persistent, survives deploys); without it, a local SQLite file is used. Libraries are per-user: drafts belong to the LinkedIn account connected when saving. |
 
 PowerShell example:
 

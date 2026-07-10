@@ -51,46 +51,86 @@ app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
 from datetime import timedelta
 app.permanent_session_lifetime = timedelta(days=60)
 
-# --- Drafts library (SQLite) ----------------------------------------------
+# --- Drafts library (SQLite locally, Postgres when DATABASE_URL is set) ---
 DB_PATH = os.path.join(BASE_DIR, "postpilot.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 
+if DATABASE_URL:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
 
-def _db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    def db_execute(query, params=(), fetch=None):
+        query = query.replace("?", "%s")
+        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            with conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute(query, params)
+                    if fetch == "all":
+                        return cur.fetchall()
+                    if fetch == "one":
+                        return cur.fetchone()
+        finally:
+            conn.close()
+else:
+    def db_execute(query, params=(), fetch=None):
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        try:
+            with conn:
+                cur = conn.execute(query, params)
+                if fetch == "all":
+                    return cur.fetchall()
+                if fetch == "one":
+                    return cur.fetchone()
+        finally:
+            conn.close()
 
 
 def _init_db():
-    with _db() as c:
-        c.execute("""CREATE TABLE IF NOT EXISTS posts (
-            id TEXT PRIMARY KEY,
-            created TEXT,
-            text TEXT,
-            source_title TEXT, source_url TEXT, source_date TEXT,
-            image_src TEXT, image_source TEXT, image_license TEXT,
-            image_attribution TEXT, image_page TEXT,
-            status TEXT DEFAULT 'saved',
-            posted_at TEXT)""")
+    db_execute("""CREATE TABLE IF NOT EXISTS posts (
+        id TEXT PRIMARY KEY,
+        created TEXT,
+        text TEXT,
+        source_title TEXT, source_url TEXT, source_date TEXT,
+        image_src TEXT, image_source TEXT, image_license TEXT,
+        image_attribution TEXT, image_page TEXT,
+        status TEXT DEFAULT 'saved',
+        posted_at TEXT,
+        owner TEXT DEFAULT 'anon')""")
+    # Migrations for databases created before the owner column existed
+    try:
+        db_execute("ALTER TABLE posts ADD COLUMN owner TEXT DEFAULT 'anon'")
+    except Exception:
+        pass
+    try:
+        db_execute("UPDATE posts SET owner='anon' "
+                   "WHERE owner IS NULL OR owner=''")
+    except Exception:
+        pass
 
 
 _init_db()
 
 
-def _save_draft(draft):
+def _owner():
+    """Identity for library ownership: LinkedIn member id, else shared anon."""
+    return session.get("li_sub") or "anon"
+
+
+def _save_draft(draft, owner):
     img = draft.get("image") or {}
-    with _db() as c:
-        c.execute(
-            "INSERT INTO posts (id, created, text, source_title, source_url, "
-            "source_date, image_src, image_source, image_license, "
-            "image_attribution, image_page, status) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,'saved')",
-            (draft["id"], draft["created"], draft["text"],
-             draft["source"].get("title", ""), draft["source"].get("url", ""),
-             draft["source"].get("date", ""),
-             img.get("src", ""), img.get("source", ""),
-             img.get("license", ""), img.get("attribution", ""),
-             img.get("page", "")))
+    db_execute(
+        "INSERT INTO posts (id, created, text, source_title, source_url, "
+        "source_date, image_src, image_source, image_license, "
+        "image_attribution, image_page, status, owner) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,'saved',?)",
+        (draft["id"], draft["created"], draft["text"],
+         draft["source"].get("title", ""), draft["source"].get("url", ""),
+         draft["source"].get("date", ""),
+         img.get("src", ""), img.get("source", ""),
+         img.get("license", ""), img.get("attribution", ""),
+         img.get("page", ""), owner))
 
 
 def _row_to_draft(r):
@@ -381,25 +421,24 @@ def api_library_save():
     d.setdefault("source", {})
     d.setdefault("created",
                  datetime.now(timezone.utc).isoformat(timespec="seconds"))
-    try:
-        _save_draft(d)
-    except sqlite3.IntegrityError:
+    if db_execute("SELECT id FROM posts WHERE id=?", (d["id"],), fetch="one"):
         return jsonify({"ok": True, "already_saved": True})
+    _save_draft(d, _owner())
     return jsonify({"ok": True})
 
 
 @app.get("/api/library")
 def api_library():
-    with _db() as c:
-        rows = c.execute("SELECT * FROM posts ORDER BY created DESC").fetchall()
+    rows = db_execute("SELECT * FROM posts WHERE owner=? ORDER BY created DESC",
+                      (_owner(),), fetch="all") or []
     return jsonify({"drafts": [_row_to_draft(r) for r in rows]})
 
 
 @app.post("/api/library/<pid>/delete")
 def api_library_delete(pid):
-    with _db() as c:
-        row = c.execute("SELECT image_src FROM posts WHERE id=?", (pid,)).fetchone()
-        c.execute("DELETE FROM posts WHERE id=?", (pid,))
+    row = db_execute("SELECT image_src FROM posts WHERE id=? AND owner=?",
+                     (pid, _owner()), fetch="one")
+    db_execute("DELETE FROM posts WHERE id=? AND owner=?", (pid, _owner()))
     # Clean up the image file if it was a locally stored one
     if row and (row["image_src"] or "").startswith("/images/"):
         p = os.path.join(BASE_DIR, g.IMAGE_DIR, os.path.basename(row["image_src"]))
@@ -564,11 +603,10 @@ def linkedin_post():
         draft_id = data.get("draft_id")
         if draft_id:
             try:
-                with _db() as c:
-                    c.execute("UPDATE posts SET status='posted', posted_at=? "
-                              "WHERE id=?",
-                              (datetime.now(timezone.utc).isoformat(
-                                  timespec="seconds"), draft_id))
+                db_execute("UPDATE posts SET status='posted', posted_at=? "
+                           "WHERE id=? AND owner=?",
+                           (datetime.now(timezone.utc).isoformat(
+                               timespec="seconds"), draft_id, _owner()))
             except Exception as e:
                 print(f"  [warn] could not mark draft posted ({e}).")
         return jsonify({"ok": True, "post_id": post_id,

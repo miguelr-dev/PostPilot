@@ -27,6 +27,7 @@
         <span class="lib-count" id="lib-count" style="display:none"></span>
       </div>
       <p style="color:var(--muted); margin-bottom:20px;">Drafts you save from the generator live here. Post the keepers, delete the rest.</p>
+      <div id="lib-note" class="voice-box" style="margin-bottom:20px;">Connect LinkedIn to get a private library tied to your account — drafts saved while connected are only visible to you.</div>
 
       <div class="lib-toolbar">
         <input type="text" id="q" placeholder="Search drafts…">
@@ -83,6 +84,8 @@
           liBtn.textContent = "Connect LinkedIn";
           liBtn.onclick = () => { window.location.href = "/auth/linkedin"; };
         }
+        const note = $("lib-note");
+        if (note) note.classList.toggle("visible", s.configured && !s.connected);
       }).catch(() => {});
     }
     refreshLinkedIn();
