@@ -127,6 +127,10 @@ nav {
   transition: color 0.2s ease;
 }
 .nav-links a:hover, .nav-links a.active { color: #ffffff; }
+.nav-links a.btn-ghost { color: var(--text); }
+.nav-links a.btn-ghost:hover { color: #ffffff; }
+.nav-links a.btn-primary, .nav-links a.btn-primary:hover { color: #ffffff; }
+.nav-links a.btn-sm { font-size: 0.85rem; font-weight: 600; }
 
 /* Buttons */
 .btn {
@@ -546,6 +550,36 @@ footer {
   font-size: 0.8rem; color: var(--muted); background: var(--surface);
   border: 1px solid var(--border); border-radius: 20px; padding: 3px 12px;
 }
+.lib-toolbar { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+.lib-toolbar input, .lib-toolbar select {
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px;
+  font-size: 0.9rem; font-family: var(--font);
+}
+.lib-toolbar input { flex: 1; min-width: 200px; }
+.lib-toolbar input:focus, .lib-toolbar select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 143, 247, 0.18);
+}
+.lib-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 20px; align-items: start;
+}
+@media (max-width: 900px) { .lib-grid { grid-template-columns: 1fr; } }
+.lib-grid .post-card { margin-bottom: 0; }
+.post-body.clamped {
+  max-height: 190px; overflow: hidden; position: relative;
+}
+.post-body.clamped::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60px;
+  background: linear-gradient(transparent, var(--surface));
+}
+.show-more {
+  display: block; width: 100%; background: none; border: none;
+  color: var(--accent); font-size: 0.82rem; font-weight: 600;
+  font-family: var(--font); cursor: pointer; padding: 8px 0 10px;
+}
+.show-more:hover { color: var(--accent-hover); }
 
 /* Landing page: example output */
 .examples { padding: 0 0 90px; }

@@ -17,7 +17,7 @@
         <a href="/#examples">Examples</a>
         <a href="/app">Generator</a>
         <a class="active" href="/library">Library</a>
-        <button id="li-connect" class="btn btn-ghost btn-sm" style="display:none">Connect LinkedIn</button>
+        <button id="li-connect" class="btn btn-ghost btn-sm">Connect LinkedIn</button>
       </div>
     </nav>
 
@@ -26,10 +26,24 @@
         <h1>Your drafts</h1>
         <span class="lib-count" id="lib-count" style="display:none"></span>
       </div>
-      <p style="color:var(--muted); margin-bottom:28px;">Drafts you save from the generator live here. Post the keepers, delete the rest.</p>
+      <p style="color:var(--muted); margin-bottom:20px;">Drafts you save from the generator live here. Post the keepers, delete the rest.</p>
+
+      <div class="lib-toolbar">
+        <input type="text" id="q" placeholder="Search drafts…">
+        <select id="f-status">
+          <option value="all" selected>All</option>
+          <option value="saved">Drafts only</option>
+          <option value="posted">Posted only</option>
+        </select>
+        <select id="f-sort">
+          <option value="new" selected>Newest first</option>
+          <option value="old">Oldest first</option>
+        </select>
+      </div>
 
       <div id="error-box" class="error-box"></div>
-      <div id="list"></div>
+      <div id="no-match" style="display:none; color:var(--muted); text-align:center; padding:40px 0;">No drafts match your search.</div>
+      <div id="list" class="lib-grid"></div>
       <div id="empty-state" class="panel" style="display:none; text-align:center; color:var(--muted);">
         Nothing saved yet. <a href="/app">Generate some posts</a> and hit "Save to library" on the ones worth keeping.
       </div>
@@ -102,6 +116,19 @@
         <div class="post-body">${esc(d.text)}</div>
         <div class="post-meta">Based on: ${srcLink} (${esc((d.source && d.source.date) || "recent")})${metaImg}</div>`;
 
+      const body = el.querySelector(".post-body");
+      if ((d.text || "").length > 420) {
+        body.classList.add("clamped");
+        const more = document.createElement("button");
+        more.className = "show-more";
+        more.textContent = "Show more";
+        more.addEventListener("click", () => {
+          const c = body.classList.toggle("clamped");
+          more.textContent = c ? "Show more" : "Show less";
+        });
+        body.after(more);
+      }
+
       el.querySelector(".copy-btn").addEventListener("click", (e) => {
         navigator.clipboard.writeText(d.text).then(() => {
           e.target.textContent = "Copied!";
@@ -144,27 +171,53 @@
       return el;
     }
 
+    let ALL = [];
+
+    function render() {
+      const q = $("q").value.trim().toLowerCase();
+      const status = $("f-status").value;
+      const sort = $("f-sort").value;
+
+      let arr = ALL.filter(d => {
+        if (status !== "all" && d.status !== status) return false;
+        if (q && !((d.text || "") + " " + ((d.source && d.source.title) || ""))
+              .toLowerCase().includes(q)) return false;
+        return true;
+      });
+      arr.sort((a, b) => sort === "old"
+        ? (a.created || "").localeCompare(b.created || "")
+        : (b.created || "").localeCompare(a.created || ""));
+
+      const list = $("list");
+      list.innerHTML = "";
+      $("empty-state").style.display = ALL.length ? "none" : "";
+      $("no-match").style.display = (ALL.length && !arr.length) ? "" : "none";
+
+      const count = $("lib-count");
+      if (ALL.length) {
+        const posted = ALL.filter(d => d.status === "posted").length;
+        const showing = arr.length === ALL.length ? "" : ` · showing ${arr.length}`;
+        count.textContent = `${ALL.length} draft${ALL.length === 1 ? "" : "s"} · ${posted} posted${showing}`;
+        count.style.display = "";
+      } else {
+        count.style.display = "none";
+      }
+      arr.forEach(d => list.appendChild(card(d)));
+    }
+
     async function load() {
       setError("");
       try {
         const r = await fetch("/api/library");
         const data = await r.json();
-        const list = $("list");
-        list.innerHTML = "";
-        $("empty-state").style.display = data.drafts.length ? "none" : "";
-        const count = $("lib-count");
-        if (data.drafts.length) {
-          const posted = data.drafts.filter(d => d.status === "posted").length;
-          count.textContent = `${data.drafts.length} draft${data.drafts.length === 1 ? "" : "s"} · ${posted} posted`;
-          count.style.display = "";
-        } else {
-          count.style.display = "none";
-        }
-        data.drafts.forEach(d => list.appendChild(card(d)));
+        ALL = data.drafts || [];
+        render();
       } catch (e) {
         setError("Could not load the library.");
       }
     }
+    ["q", "f-status", "f-sort"].forEach(id =>
+      $(id).addEventListener("input", render));
     load();
   })();
   </script>

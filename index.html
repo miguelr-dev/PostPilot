@@ -16,6 +16,7 @@
         <a href="/#how">How it works</a>
         <a href="/#examples">Examples</a>
         <a href="/library">Library</a>
+        <a id="li-connect" class="btn btn-ghost btn-sm" href="/auth/linkedin">Connect LinkedIn</a>
         <a class="btn btn-primary btn-sm" href="/app">Open generator</a>
       </div>
     </nav>
@@ -457,6 +458,16 @@ Source: https://www.realtor.com/june-housing-inventory-report
         await linkedinStage();
       }
     })();
+  })();
+
+  // LinkedIn status in nav
+  (() => {
+    const btn = document.getElementById("li-connect");
+    if (!btn) return;
+    fetch("/api/linkedin/status").then(r => r.json()).then(s => {
+      if (!s.configured) { btn.style.display = "none"; return; }
+      if (s.connected) { btn.textContent = `LinkedIn: ${s.name} ✓`; btn.removeAttribute("href"); }
+    }).catch(() => {});
   })();
 
   // Bento vignette loops
