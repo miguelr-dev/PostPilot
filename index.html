@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <div class="feed-rail feed-left" aria-hidden="true"><div class="feed-track"></div></div>
+  <div class="feed-rail feed-right" aria-hidden="true"><div class="feed-track"></div></div>
+
   <div class="container">
     <nav>
       <a class="logo" href="/">Post<span>Pilot</span></a>
@@ -113,9 +116,9 @@
 
         <div class="bento-card b-span4">
           <div class="b-vignette v-src">
-            <div class="src-line s1">🔗 Source: reuters.com/business/housing-inventory-climbs…</div>
-            <div class="src-line s2">🖼️ Photo by Anna K. on Pexels — Pexels License, free commercial use</div>
-            <div class="src-line s3">✓ Linked and credited automatically in every draft</div>
+            <div class="src-line s1"><span class="src-tag t-blue">SOURCE</span> reuters.com/business/housing-inventory-climbs…</div>
+            <div class="src-line s2"><span class="src-tag t-purple">IMAGE</span> Photo by Anna K. on Pexels — free commercial use</div>
+            <div class="src-line s3"><span class="src-tag t-green">AUTO</span> Linked and credited in every draft</div>
           </div>
           <h3>Receipts included</h3>
           <p>Every post links its source article, and every image ships with its license and photographer credit.</p>
@@ -126,10 +129,10 @@
     <section class="steps" id="how">
       <h2>How it works</h2>
       <ol>
-        <li><strong>Paste your material</strong>A meeting transcript, voice memo transcription, or rough notes — anything in your own words.</li>
-        <li><strong>Pick your settings</strong>Tone, length, number of variants, and how far back to look for news.</li>
-        <li><strong>We do the reading</strong>Fresh news about your topics is gathered and matched against your themes and opinions.</li>
-        <li><strong>Copy and post</strong>Review the drafts, grab the image, paste into LinkedIn. Done.</li>
+        <li class="sc-blue"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="sc-num">01</span></div><strong>Paste your material</strong>A meeting transcript, voice memo transcription, or rough notes — anything in your own words.</li>
+        <li class="sc-purple"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><span class="sc-num">02</span></div><strong>Pick your settings</strong>Tone, length, number of variants, and how far back to look for news.</li>
+        <li class="sc-orange"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2V6"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg></span><span class="sc-num">03</span></div><strong>We do the reading</strong>Fresh news about your topics is gathered and matched against your themes and opinions.</li>
+        <li class="sc-green"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span><span class="sc-num">04</span></div><strong>Post it</strong>Review the drafts, grab the image, publish to LinkedIn with one click. Done.</li>
       </ol>
 
       <div class="demo-wrap">
@@ -226,7 +229,51 @@ Source: https://www.realtor.com/june-housing-inventory-report
   </footer>
 
   <style>
-    .demo-wrap { max-width: 760px; margin: 44px auto 0; position: relative; }
+    /* Side LinkedIn-feed rails */
+    .feed-rail {
+      position: fixed; top: 0; bottom: 0; width: 225px; z-index: -1;
+      overflow: hidden; pointer-events: none; opacity: 0.5;
+      display: none;
+      -webkit-mask-image: linear-gradient(transparent, black 18%, black 82%, transparent);
+      mask-image: linear-gradient(transparent, black 18%, black 82%, transparent);
+    }
+    @media (min-width: 1500px) { .feed-rail { display: block; } }
+    .feed-left { left: 30px; }
+    .feed-right { right: 30px; }
+    .feed-track { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+    .mini-post {
+      background: #fff; border-radius: 10px; margin: 14px 4px; overflow: hidden;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+    }
+    .mp-head { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px 6px; }
+    .mp-avatar {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      color: #fff; font-size: 0.6rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mp-name { flex: 1; min-width: 0; line-height: 1.25; }
+    .mp-name b {
+      display: block; color: #1c1e21; font-size: 0.66rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mp-name small {
+      display: block; color: #6b7280; font-size: 0.56rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mp-name small.mp-time { color: #9aa1ac; }
+    .mp-text {
+      padding: 2px 12px 9px; color: #2d3138; font-size: 0.6rem; line-height: 1.45;
+    }
+    .mp-img { height: 84px; }
+    .mp-foot {
+      display: flex; justify-content: space-between; padding: 7px 12px;
+      font-size: 0.56rem; color: #8a919e; border-top: 1px solid #eef0f4;
+    }
+    .mp-actions {
+      display: flex; justify-content: space-around; padding: 6px 6px;
+      border-top: 1px solid #eef0f4; font-size: 0.57rem; font-weight: 600; color: #5f6673;
+    }
+  .demo-wrap { max-width: 760px; margin: 44px auto 0; position: relative; }
     .demo-wrap::before {
       content: ""; position: absolute; inset: -50px -70px; z-index: -1;
       background:
@@ -457,6 +504,71 @@ Source: https://www.realtor.com/june-housing-inventory-report
         await linkedinStage();
       }
     })();
+  })();
+
+  // Side feed rails: build skeleton posts + parallax scroll
+  (() => {
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const AVATARS = ["#4f8ff7", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#eab308", "#3ecf8e"];
+    const POSTS = [
+      { n: "Maya Chen", h: "Product Lead @ fintech startup", t: "3d",
+        x: "Shipped a feature nobody used for six months. Killed it last week and two customers noticed. The lesson isn't \"talk to users more\" — it's that sunk cost is a product strategy killer.", img: "linear-gradient(120deg,#4f8ff7,#7c5cff)" },
+      { n: "Devon Marsh", h: "Economist | Newsletter: Plain Numbers", t: "1d",
+        x: "Everyone watches the Fed. Almost nobody watches small business credit conditions. That's where the next six months of hiring gets decided.", img: "" },
+      { n: "Priya Nair", h: "Founder & CEO @ Loopwork", t: "5h",
+        x: "We raised less than we could have, on purpose. Constraints forced us to find revenue in month 4 instead of year 2. Best decision we never wanted to make.", img: "linear-gradient(120deg,#ec4899,#f97316)" },
+      { n: "Tom Okafor", h: "Head of Talent | ex-recruiter", t: "2d",
+        x: "Read 400 resumes this quarter. The ones that got interviews all had one thing in common: they showed the work, not the title.", img: "" },
+      { n: "Sofia Reyes", h: "Real estate analyst · housing data nerd", t: "6h",
+        x: "Inventory finally climbing in 34 of the 50 largest metros. If you've been waiting for leverage as a buyer, it's quietly arriving.", img: "linear-gradient(120deg,#14b8a6,#4f8ff7)" },
+      { n: "James Park", h: "Brand strategist | boring industries fan", t: "4d",
+        x: "Your category sounds the same everywhere. That's not a problem, it's an opening. The most human-sounding company in a boring industry wins by default.", img: "" },
+      { n: "Anna Kowalski", h: "Wellness lead @ HealthOS", t: "1d",
+        x: "A meditation app subscription doesn't fix a culture of 9pm emails. Respecting time off would do more than every perk combined.", img: "linear-gradient(120deg,#eab308,#ec4899)" },
+      { n: "Marcus Webb", h: "Climate tech investor", t: "2d",
+        x: "Paper straws at HQ, coal in the supply chain. Real climate progress is boring: insulation, logistics, grids. Procurement beats PR.", img: "linear-gradient(120deg,#3ecf8e,#4f8ff7)" },
+    ];
+    function miniPost(i) {
+      const p = POSTS[i % POSTS.length];
+      const likes = 12 + ((i * 37) % 180);
+      const comments = 2 + ((i * 13) % 30);
+      const initials = p.n.split(" ").map(w => w[0]).join("");
+      return `<div class="mini-post">
+        <div class="mp-head">
+          <span class="mp-avatar" style="background:${AVATARS[i % AVATARS.length]}">${initials}</span>
+          <span class="mp-name"><b>${p.n}</b><small>${p.h}</small><small class="mp-time">${p.t} · 🌐</small></span>
+        </div>
+        <div class="mp-text">${p.x}</div>
+        ${p.img ? `<div class="mp-img" style="background:${p.img}"></div>` : ""}
+        <div class="mp-foot"><span>👍❤️💡 ${likes}</span><span>${comments} comments</span></div>
+        <div class="mp-actions"><span>Like</span><span>Comment</span><span>Repost</span><span>Send</span></div>
+      </div>`;
+    }
+    const rails = [
+      { track: document.querySelector(".feed-left .feed-track"), speed: 0.16, offset: 0 },
+      { track: document.querySelector(".feed-right .feed-track"), speed: 0.30, offset: 4 },
+    ];
+    rails.forEach((r) => {
+      if (!r.track) return;
+      let html = "";
+      for (let i = 0; i < 9; i++) html += miniPost(i + r.offset);
+      r.track.innerHTML = html + html; // duplicated for a seamless loop
+    });
+    if (!reduced) {
+      let ticking = false;
+      function update() {
+        rails.forEach((r) => {
+          if (!r.track) return;
+          const half = r.track.scrollHeight / 2 || 1;
+          r.track.style.transform = `translateY(${-((window.scrollY * r.speed) % half)}px)`;
+        });
+        ticking = false;
+      }
+      addEventListener("scroll", () => {
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
+      }, { passive: true });
+      update();
+    }
   })();
 
   // Bento vignette loops

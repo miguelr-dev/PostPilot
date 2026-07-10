@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@1&display=swap');
 
 :root {
   --bg: #0b0d12;
@@ -18,7 +18,8 @@
   --c-teal: #14b8a6;
   --c-yellow: #eab308;
   --radius: 14px;
-  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", -apple-system, sans-serif;
   --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
@@ -95,6 +96,11 @@ body::after {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
+h1, h2, h3, .logo {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
 a { color: var(--accent); text-decoration: none; transition: color 0.15s ease; }
 a:hover { color: var(--accent-hover); }
 
@@ -116,7 +122,10 @@ nav {
 }
 .logo span { color: var(--accent); }
 .nav-links { display: flex; gap: 22px; align-items: center; }
-.nav-links a { color: #f0f3f9; font-size: 0.95rem; font-weight: 600; }
+.nav-links a {
+  color: #9aa3b8; font-size: 0.95rem; font-weight: 600;
+  transition: color 0.2s ease;
+}
 .nav-links a:hover, .nav-links a.active { color: #ffffff; }
 
 /* Buttons */
@@ -156,7 +165,10 @@ nav {
   letter-spacing: -0.03em; margin-bottom: 22px; font-weight: 800;
 }
 .hero h1 em {
-  font-style: normal;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
   background: linear-gradient(100deg, var(--accent), var(--c-purple), var(--c-pink));
   -webkit-background-clip: text;
   background-clip: text;
@@ -285,7 +297,15 @@ nav {
 }
 .src-line.s1 { animation-delay: 0.4s; }
 .src-line.s2 { animation-delay: 1.0s; }
-.src-line.s3 { animation-delay: 1.6s; color: var(--green); }
+.src-line.s3 { animation-delay: 1.6s; }
+.src-tag {
+  display: inline-block; font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em;
+  padding: 1px 7px; border-radius: 5px; margin-right: 6px; vertical-align: 1px;
+}
+.src-tag.t-blue { background: rgba(79,143,247,0.16); color: #85b3fa; }
+.src-tag.t-purple { background: rgba(139,92,246,0.16); color: #b39af8; }
+.src-tag.t-green { background: rgba(62,207,142,0.16); color: #6fdcae; }
 .v-ticker { padding: 0 16px; position: relative; }
 .v-ticker::before, .v-ticker::after {
   content: ""; position: absolute; left: 0; right: 0; height: 28px; z-index: 1;
@@ -333,21 +353,54 @@ nav {
   gap: 20px;
 }
 .steps li {
-  counter-increment: step; background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;
-  color: var(--muted); font-size: 0.92rem;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 22px; color: var(--muted); font-size: 0.92rem;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
-.steps li:hover { transform: translateY(-3px); border-color: var(--border-hover); }
-.steps li::before {
-  content: counter(step); display: block; width: 32px; height: 32px;
-  border-radius: 50%; background: var(--accent); color: #fff;
-  font-weight: 700; text-align: center; line-height: 32px; margin-bottom: 14px;
+.steps li strong {
+  color: var(--text); display: block; margin-bottom: 5px;
+  font-family: var(--font-display); font-size: 1.02rem;
 }
-.steps li:nth-child(2)::before { background: var(--c-purple); }
-.steps li:nth-child(3)::before { background: var(--c-orange); }
-.steps li:nth-child(4)::before { background: var(--green); }
-.steps li strong { color: var(--text); display: block; margin-bottom: 4px; }
+.sc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.sc-icon {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+}
+.sc-icon svg { width: 22px; height: 22px; }
+.sc-blue .sc-icon { color: #85b3fa; }
+.sc-purple .sc-icon { color: #b39af8; }
+.sc-orange .sc-icon { color: #fba368; }
+.sc-green .sc-icon { color: #6fdcae; }
+.sc-num {
+  font-family: ui-monospace, Consolas, monospace; font-size: 0.75rem;
+  color: var(--muted); opacity: 0.8;
+}
+.sc-blue {
+  background: radial-gradient(130% 100% at 50% 0%, rgba(79, 143, 247, 0.17), var(--surface) 62%);
+  border-color: rgba(79, 143, 247, 0.32);
+}
+.sc-blue:hover { box-shadow: 0 10px 40px rgba(79, 143, 247, 0.22); }
+.sc-blue .sc-icon { box-shadow: 0 0 22px rgba(79, 143, 247, 0.4); border-color: rgba(79, 143, 247, 0.45); }
+.sc-purple {
+  background: radial-gradient(130% 100% at 50% 0%, rgba(139, 92, 246, 0.17), var(--surface) 62%);
+  border-color: rgba(139, 92, 246, 0.32);
+}
+.sc-purple:hover { box-shadow: 0 10px 40px rgba(139, 92, 246, 0.22); }
+.sc-purple .sc-icon { box-shadow: 0 0 22px rgba(139, 92, 246, 0.4); border-color: rgba(139, 92, 246, 0.45); }
+.sc-orange {
+  background: radial-gradient(130% 100% at 50% 0%, rgba(249, 115, 22, 0.15), var(--surface) 62%);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+.sc-orange:hover { box-shadow: 0 10px 40px rgba(249, 115, 22, 0.2); }
+.sc-orange .sc-icon { box-shadow: 0 0 22px rgba(249, 115, 22, 0.35); border-color: rgba(249, 115, 22, 0.45); }
+.sc-green {
+  background: radial-gradient(130% 100% at 50% 0%, rgba(62, 207, 142, 0.15), var(--surface) 62%);
+  border-color: rgba(62, 207, 142, 0.3);
+}
+.sc-green:hover { box-shadow: 0 10px 40px rgba(62, 207, 142, 0.2); }
+.sc-green .sc-icon { box-shadow: 0 0 22px rgba(62, 207, 142, 0.35); border-color: rgba(62, 207, 142, 0.45); }
+.steps li:hover { transform: translateY(-4px); }
 
 footer {
   border-top: 1px solid var(--border); padding: 28px 0; text-align: center;
