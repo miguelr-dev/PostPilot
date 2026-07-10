@@ -15,5 +15,11 @@ data/
 Thumbs.db
 .vscode/
 
+# Local database (your drafts library)
+*.db
+
+# Generated logo
+logo.png
+
 # Never commit secrets
 .env

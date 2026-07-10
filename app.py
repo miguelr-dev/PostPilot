@@ -10,8 +10,11 @@ PEXELS_API_KEY, LLM_MODEL, PORT.
 """
 import os
 import secrets
+import shutil
+import sqlite3
 import threading
 import uuid
+from datetime import datetime, timezone
 
 import requests
 from flask import (Flask, jsonify, redirect, request, send_from_directory,
@@ -48,6 +51,61 @@ app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
 from datetime import timedelta
 app.permanent_session_lifetime = timedelta(days=60)
 
+# --- Drafts library (SQLite) ----------------------------------------------
+DB_PATH = os.path.join(BASE_DIR, "postpilot.db")
+
+
+def _db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def _init_db():
+    with _db() as c:
+        c.execute("""CREATE TABLE IF NOT EXISTS posts (
+            id TEXT PRIMARY KEY,
+            created TEXT,
+            text TEXT,
+            source_title TEXT, source_url TEXT, source_date TEXT,
+            image_src TEXT, image_source TEXT, image_license TEXT,
+            image_attribution TEXT, image_page TEXT,
+            status TEXT DEFAULT 'saved',
+            posted_at TEXT)""")
+
+
+_init_db()
+
+
+def _save_draft(draft):
+    img = draft.get("image") or {}
+    with _db() as c:
+        c.execute(
+            "INSERT INTO posts (id, created, text, source_title, source_url, "
+            "source_date, image_src, image_source, image_license, "
+            "image_attribution, image_page, status) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,'saved')",
+            (draft["id"], draft["created"], draft["text"],
+             draft["source"].get("title", ""), draft["source"].get("url", ""),
+             draft["source"].get("date", ""),
+             img.get("src", ""), img.get("source", ""),
+             img.get("license", ""), img.get("attribution", ""),
+             img.get("page", "")))
+
+
+def _row_to_draft(r):
+    d = {"id": r["id"], "created": r["created"], "text": r["text"],
+         "status": r["status"], "posted_at": r["posted_at"],
+         "source": {"title": r["source_title"], "url": r["source_url"],
+                    "date": r["source_date"]},
+         "image": None}
+    if r["image_src"]:
+        d["image"] = {"src": r["image_src"], "source": r["image_source"],
+                      "license": r["image_license"],
+                      "attribution": r["image_attribution"],
+                      "page": r["image_page"]}
+    return d
+
 # --- LinkedIn OAuth config (set these env vars to enable posting) ---
 LI_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID", "")
 LI_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET", "")
@@ -68,8 +126,10 @@ def _job_update(job_id, **kw):
         JOBS[job_id].update(kw)
 
 
-def _serialize_draft(text, topic, img):
+def _serialize_draft(text, topic, img, draft_id):
     d = {
+        "id": draft_id,
+        "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "text": text,
         "source": {
             "title": topic.primary.title,
@@ -114,15 +174,28 @@ def _run_job(job_id, settings, transcript_text):
             _job_update(job_id, progress=f"Writing variant {i} of {len(topics)}...")
             text = g.format_post(g.generate_post(topic, voice, settings),
                                  max_chars=getattr(settings, "max_chars", 2900))
+            draft_id = uuid.uuid4().hex[:12]
             img = None
             if settings.images:
                 try:
                     _job_update(job_id, progress=f"Finding image for variant {i}...")
                     q, _alt = g.build_image_query(topic)
                     img = g.find_image(q, i)
+                    # Give the image a unique name so library drafts keep
+                    # their picture after later runs overwrite variant-N.jpg
+                    if img and img.get("local_path"):
+                        unique = os.path.join(BASE_DIR, g.IMAGE_DIR,
+                                              f"{draft_id}.jpg")
+                        shutil.copyfile(img["local_path"], unique)
+                        img["local_path"] = unique
                 except Exception as e:
                     print(f"  [warn] image step failed ({e}).")
-            drafts.append(_serialize_draft(text, topic, img))
+            draft = _serialize_draft(text, topic, img, draft_id)
+            try:
+                _save_draft(draft)
+            except Exception as e:
+                print(f"  [warn] could not save draft to library ({e}).")
+            drafts.append(draft)
 
         result = {
             "drafts": drafts,
@@ -211,6 +284,28 @@ def api_status(job_id):
         if job is None:
             return jsonify({"error": "unknown job"}), 404
         return jsonify(job)
+
+
+@app.get("/api/library")
+def api_library():
+    with _db() as c:
+        rows = c.execute("SELECT * FROM posts ORDER BY created DESC").fetchall()
+    return jsonify({"drafts": [_row_to_draft(r) for r in rows]})
+
+
+@app.post("/api/library/<pid>/delete")
+def api_library_delete(pid):
+    with _db() as c:
+        row = c.execute("SELECT image_src FROM posts WHERE id=?", (pid,)).fetchone()
+        c.execute("DELETE FROM posts WHERE id=?", (pid,))
+    # Clean up the image file if it was a locally stored one
+    if row and (row["image_src"] or "").startswith("/images/"):
+        p = os.path.join(BASE_DIR, g.IMAGE_DIR, os.path.basename(row["image_src"]))
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+    return jsonify({"ok": True})
 
 
 @app.get("/api/health")
@@ -363,6 +458,17 @@ def linkedin_post():
                                      "please reconnect."}), 401
         r.raise_for_status()
         post_id = r.headers.get("x-restli-id") or r.json().get("id", "")
+        # Mark the library draft as posted
+        draft_id = data.get("draft_id")
+        if draft_id:
+            try:
+                with _db() as c:
+                    c.execute("UPDATE posts SET status='posted', posted_at=? "
+                              "WHERE id=?",
+                              (datetime.now(timezone.utc).isoformat(
+                                  timespec="seconds"), draft_id))
+            except Exception as e:
+                print(f"  [warn] could not mark draft posted ({e}).")
         return jsonify({"ok": True, "post_id": post_id,
                         "with_image": category == "IMAGE"})
     except requests.HTTPError as e:
@@ -386,6 +492,11 @@ def index():
 @app.get("/app")
 def generator_page():
     return send_from_directory(BASE_DIR, "generator.html")
+
+
+@app.get("/library")
+def library_page():
+    return send_from_directory(BASE_DIR, "library.html")
 
 
 @app.get("/styles.css")

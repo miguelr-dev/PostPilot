@@ -135,6 +135,7 @@
             body: JSON.stringify({
               text: d.text,
               image_src: d.image ? d.image.src : "",
+              draft_id: d.id || "",
             }),
           });
           const res = await r.json();
