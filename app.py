@@ -153,6 +153,51 @@ def _serialize_draft(text, topic, img, draft_id):
     return d
 
 
+def _rank_topics_for_voice(content, voice, transcript_text, n):
+    """Boost the weight of news signals most relevant to the user's
+    themes/opinions so select_topics() favors them over generic top headlines."""
+    primaries = [s for s in content if s.kind in ("ai_news", "arxiv")] or list(content)
+    if len(primaries) <= n:
+        return
+    interests = "; ".join((voice.themes or []) + (voice.opinions or []))
+    if not interests.strip():
+        interests = (transcript_text or "")[:600]
+    if not interests.strip():
+        return
+
+    if g.llm_available():
+        try:
+            lines = "\n".join(f"{i}. {s.title or s.short(80)}"
+                              for i, s in enumerate(primaries))
+            raw = g.llm_complete(
+                f"A person cares about these topics and opinions:\n{interests}\n\n"
+                f"Candidate news headlines:\n{lines}\n\n"
+                f"Return ONLY a JSON array with the indices of the {n} headlines "
+                "most relevant to what this person cares about, most relevant "
+                "first. Example: [4, 0, 7]",
+                system="You rank news headlines by relevance to a person's "
+                       "interests. Output only the JSON array.",
+                max_tokens=100, temperature=0.1)
+            import json as _json
+            import re as _re
+            cleaned = _re.sub(r"^```[a-zA-Z]*\n?|\n?```$", "", raw.strip())
+            try:
+                idx = [int(x) for x in _json.loads(cleaned)]
+            except Exception:
+                idx = [int(x) for x in _re.findall(r"\d+", cleaned)]
+            for rank, i in enumerate(idx[:n]):
+                if 0 <= i < len(primaries):
+                    primaries[i].weight += 100 - rank
+            return
+        except Exception as e:
+            print(f"  [warn] LLM topic ranking failed ({e}); using keywords.")
+
+    # Fallback: keyword overlap between interests and each headline
+    key = g._keywords(interests + " " + (transcript_text or ""))
+    for s in primaries:
+        s.weight += 1.5 * len(key & g._keywords(s.title + " " + s.text))
+
+
 def _run_job(job_id, settings, transcript_text):
     try:
         _job_update(job_id, progress="Gathering live AI news...")
@@ -166,7 +211,12 @@ def _run_job(job_id, settings, transcript_text):
         _job_update(job_id, progress="Building your voice profile...")
         voice = g.build_voice_profile(voice_signals)
 
-        _job_update(job_id, progress="Selecting topics...")
+        _job_update(job_id, progress="Matching news to your topics...")
+        try:
+            _rank_topics_for_voice(content, voice, transcript_text,
+                                   settings.variants)
+        except Exception as e:
+            print(f"  [warn] topic ranking failed ({e}).")
         topics = g.select_topics(content, settings.variants)
 
         drafts = []
@@ -179,8 +229,8 @@ def _run_job(job_id, settings, transcript_text):
             if settings.images:
                 try:
                     _job_update(job_id, progress=f"Finding image for variant {i}...")
-                    q, _alt = g.build_image_query(topic)
-                    img = g.find_image(q, i)
+                    q, _alt = g.build_image_query(topic, post_text=text)
+                    img = g.find_image(q, i, context=text)
                     # Give the image a unique name so library drafts keep
                     # their picture after later runs overwrite variant-N.jpg
                     if img and img.get("local_path"):
@@ -258,6 +308,7 @@ def api_generate():
         transcript = g.SAMPLE_TRANSCRIPT
     settings = g.Settings(tone=tone, length=length_key, variants=variants,
                           news_lookback_hours=lookback,
+                          max_news_items=12,
                           images=bool(data.get("images", True)))
     # Extra attrs consumed by _run_job / generator.generate_post
     settings.max_tokens = min(8000, max(700, int(word_max * 2.2) + 300))
