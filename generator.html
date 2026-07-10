@@ -45,9 +45,13 @@
         </div>
 
         <div class="field">
-          <label for="wordcount">Length (words)</label>
-          <input type="number" id="wordcount" value="150" min="0" max="3000" step="10">
-          <div class="hint">0–3000 words. 0 = as short as possible. Note: LinkedIn caps posts at ~3,000 characters (roughly 450 words) — longer drafts work better as articles.</div>
+          <label for="wordmin">Length (word range)</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="number" id="wordmin" value="100" min="0" max="3000" step="10" style="flex:1;" aria-label="Minimum words">
+            <span style="color:var(--muted);">to</span>
+            <input type="number" id="wordmax" value="200" min="0" max="3000" step="10" style="flex:1;" aria-label="Maximum words">
+          </div>
+          <div class="hint">0–3000 words. Note: LinkedIn caps posts at ~3,000 characters (roughly 450 words) — longer drafts work better as articles.</div>
         </div>
 
         <div class="field">

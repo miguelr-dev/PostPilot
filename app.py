@@ -112,17 +112,24 @@ def api_generate():
     if tone not in g.TONE_GUIDE:
         tone = "insightful"
 
-    # Target word count: 0-3000 (0 = as short as possible)
-    try:
-        word_count = max(0, min(3000, int(data.get("word_count", 150))))
-    except (TypeError, ValueError):
-        word_count = 150
-    length_key = f"custom-{word_count}"
-    if word_count == 0:
+    # Target word range: 0-3000 (both 0 = as short as possible)
+    def _wc(key, default):
+        try:
+            return max(0, min(3000, int(data.get(key, default))))
+        except (TypeError, ValueError):
+            return default
+    word_min, word_max = _wc("word_min", 100), _wc("word_max", 200)
+    if word_min > word_max:
+        word_min, word_max = word_max, word_min
+    length_key = f"custom-{word_min}-{word_max}"
+    if word_max == 0:
         g.LENGTH_GUIDE[length_key] = "as short as possible - a single punchy line."
-    else:
-        g.LENGTH_GUIDE[length_key] = (f"about {word_count} words. Aim close to "
+    elif word_min == word_max:
+        g.LENGTH_GUIDE[length_key] = (f"about {word_max} words. Aim close to "
                                       f"this word count.")
+    else:
+        g.LENGTH_GUIDE[length_key] = (f"between {word_min} and {word_max} words. "
+                                      f"Stay inside this range.")
 
     try:
         variants = max(1, min(5, int(data.get("variants", 3))))
@@ -147,8 +154,8 @@ def api_generate():
                           news_lookback_hours=lookback,
                           images=bool(data.get("images", True)))
     # Extra attrs consumed by _run_job / generator.generate_post
-    settings.max_tokens = min(8000, max(700, int(word_count * 2.2) + 300))
-    settings.max_chars = max(2900, word_count * 8)
+    settings.max_tokens = min(8000, max(700, int(word_max * 2.2) + 300))
+    settings.max_chars = max(2900, word_max * 8)
 
     job_id = uuid.uuid4().hex
     with JOBS_LOCK:
