@@ -17,6 +17,26 @@ import requests
 from flask import (Flask, jsonify, redirect, request, send_from_directory,
                    session)
 
+
+def _load_dotenv(path=".env"):
+    """Load KEY=VALUE lines from a local .env file (no dependency needed).
+    Real environment variables always win over .env values."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                k, v = k.strip(), v.strip().strip('"').strip("'")
+                if k and v and k not in os.environ:
+                    os.environ[k] = v
+    except OSError:
+        pass
+
+
+_load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+
 import generator as g
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
