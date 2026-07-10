@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generator — PostPilot</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="logo" href="/">Post<span>Pilot</span></a>
+      <div class="nav-links">
+        <a href="/#features">Features</a>
+        <a href="/#how">How it works</a>
+        <a class="active" href="/app">Generator</a>
+        <span id="llm-badge" class="badge">checking…</span>
+      </div>
+    </nav>
+
+    <div class="gen-layout">
+      <!-- Settings panel -->
+      <div class="panel">
+        <h2>Settings</h2>
+
+        <div class="field">
+          <label for="transcript">Your transcript or notes</label>
+          <textarea id="transcript" placeholder="Paste a meeting transcript, voice memo, or notes written in your own words…"></textarea>
+          <div class="hint">Used to learn your voice. Leave empty and check the box below to try the built-in sample.</div>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="use-sample">
+          <label for="use-sample">Use built-in sample transcript</label>
+        </div>
+
+        <div class="field">
+          <label for="tone">Tone</label>
+          <select id="tone">
+            <option value="insightful" selected>Insightful</option>
+            <option value="casual">Casual</option>
+            <option value="bold">Bold</option>
+            <option value="technical">Technical</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="wordcount">Length (words)</label>
+          <input type="number" id="wordcount" value="150" min="0" max="3000" step="10">
+          <div class="hint">0–3000 words. 0 = as short as possible. Note: LinkedIn caps posts at ~3,000 characters (roughly 450 words) — longer drafts work better as articles.</div>
+        </div>
+
+        <div class="field">
+          <label for="variants">Variants</label>
+          <select id="variants">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="lookback">News lookback</label>
+          <div style="display:flex; gap:8px;">
+            <input type="number" id="lookback" value="2" min="1" style="flex:1;">
+            <select id="lookback-unit" style="flex:1;">
+              <option value="days" selected>Days</option>
+              <option value="months">Months</option>
+              <option value="years">Years</option>
+            </select>
+          </div>
+          <div class="hint">How far back to search for news to react to.</div>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="images" checked>
+          <label for="images">Attach stock images</label>
+        </div>
+
+        <button id="generate-btn" class="btn btn-primary" style="width:100%">Generate posts</button>
+      </div>
+
+      <!-- Results panel -->
+      <div>
+        <div id="error-box" class="error-box"></div>
+
+        <div id="progress">
+          <div class="spinner"></div>
+          <p id="progress-text">Starting…</p>
+        </div>
+
+        <div id="voice-box" class="voice-box"></div>
+        <div id="results"></div>
+
+        <div id="empty-state" class="panel" style="text-align:center; color:var(--muted);">
+          Your generated posts will appear here.<br>
+          Paste a transcript (or use the sample) and hit <strong style="color:var(--text)">Generate posts</strong>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">Drafts are suggestions — always review before posting. Images include license &amp; attribution info.</div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

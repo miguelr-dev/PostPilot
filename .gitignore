@@ -1,0 +1,19 @@
+# Generated output (posts + downloaded images)
+output/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local voice data (optional - remove these lines if you want them in the repo)
+data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Never commit secrets
+.env
