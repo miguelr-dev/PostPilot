@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PostPilot — LinkedIn posts in your voice</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f8ff7'/%3E%3Ctext x='50' y='72' font-size='62' font-weight='bold' font-family='Arial' fill='white' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -15,57 +16,142 @@
         <a href="/#how">How it works</a>
         <a href="/#examples">Examples</a>
         <a href="/library">Library</a>
+        <a id="li-connect" class="btn btn-ghost btn-sm" href="/auth/linkedin">Connect LinkedIn</a>
         <a class="btn btn-primary btn-sm" href="/app">Open generator</a>
       </div>
     </nav>
 
     <section class="hero">
-      <h1>LinkedIn posts that sound like <em>you</em>, powered by today's AI news</h1>
-      <p>Paste a meeting transcript or your notes. PostPilot learns your voice, pulls the latest AI headlines, and drafts ready-to-publish posts — each with a license-safe image attached.</p>
+      <div class="hero-orbs" aria-hidden="true"><div class="hero-orb"></div><div class="hero-orb"></div><div class="hero-orb"></div></div>
+      <h1>LinkedIn posts that sound like <em>you</em>, powered by today's news</h1>
+      <p>Paste a meeting transcript or your notes on any topic. PostPilot learns your voice, finds the latest headlines about what you care about, and drafts ready-to-publish posts — each with a license-safe image attached.</p>
       <a class="btn btn-primary" href="/app">Generate posts</a>
     </section>
 
-    <section class="features" id="features">
-      <div class="card">
-        <span class="icon">🗞️</span>
-        <h3>Live news, not stale takes</h3>
-        <p>Pulls fresh AI stories from news feeds, Hacker News, and arXiv within your chosen lookback window, so every post reacts to something current.</p>
+    <section class="lin-section" id="features">
+      <h2 class="lin-head"><strong>A new way to show up on LinkedIn.</strong> Purpose-built for people with opinions but no time, PostPilot turns your notes and today's news into posts that sound like you.</h2>
+
+      <div class="lin-features">
+        <div class="lin-item">
+          <div class="lin-fig">FIG 0.1</div>
+          <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="52" y="52" width="140" height="88" rx="9" stroke="#333c54" opacity="0.35"/>
+            <rect x="42" y="42" width="140" height="88" rx="9" stroke="#333c54" opacity="0.6"/>
+            <rect x="32" y="32" width="140" height="88" rx="9" stroke="#4a5474" fill="#12151d"/>
+            <circle cx="50" cy="50" r="4" fill="#4f8ff7" opacity="0.9"/>
+            <line x1="62" y1="50" x2="150" y2="50" stroke="#4a5474" stroke-linecap="round"/>
+            <line x1="46" y1="68" x2="156" y2="68" stroke="#333c54" stroke-linecap="round"/>
+            <line x1="46" y1="82" x2="140" y2="82" stroke="#333c54" stroke-linecap="round"/>
+            <line x1="46" y1="96" x2="150" y2="96" stroke="#333c54" stroke-linecap="round"/>
+          </svg>
+          <h3>Reacts to live news</h3>
+          <p>Reads your notes, works out what you care about — AI, economics, real estate, anything — and pulls fresh headlines on exactly those topics.</p>
+        </div>
+
+        <div class="lin-item">
+          <div class="lin-fig">FIG 0.2</div>
+          <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="66" cy="80" r="26" stroke="#4a5474"/>
+            <circle cx="66" cy="72" r="9" stroke="#4a5474"/>
+            <path d="M50 96 a16 16 0 0 1 32 0" stroke="#4a5474"/>
+            <rect x="112" y="66" width="5" height="28" rx="2.5" fill="#333c54"/>
+            <rect x="124" y="52" width="5" height="56" rx="2.5" fill="#4a5474"/>
+            <rect x="136" y="40" width="5" height="80" rx="2.5" fill="#8b5cf6" opacity="0.9"/>
+            <rect x="148" y="56" width="5" height="48" rx="2.5" fill="#4a5474"/>
+            <rect x="160" y="68" width="5" height="24" rx="2.5" fill="#333c54"/>
+          </svg>
+          <h3>Writes in your voice</h3>
+          <p>Learns your themes, opinions, and rhythm from a transcript or notes — then ghostwrites as you, with clean grammar and structure.</p>
+        </div>
+
+        <div class="lin-item">
+          <div class="lin-fig">FIG 0.3</div>
+          <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="36" y="30" width="120" height="100" rx="9" stroke="#4a5474" fill="#12151d"/>
+            <circle cx="70" cy="60" r="10" stroke="#333c54"/>
+            <path d="M44 112 L78 82 L98 98 L122 72 L148 96" stroke="#4a5474" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="140" y="92" width="44" height="38" rx="8" fill="#f97316" opacity="0.9"/>
+            <path d="M152 111 l8 8 l14 -16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <h3>Ships with one click</h3>
+          <p>A license-safe image is picked to match each draft. Save the keepers to your library and post straight to LinkedIn.</p>
+        </div>
       </div>
-      <div class="card">
-        <span class="icon">🎙️</span>
-        <h3>Your actual voice</h3>
-        <p>Builds a profile of your themes, opinions, and writing style from a transcript or notes — then ghostwrites as you, not as a generic AI.</p>
-      </div>
-      <div class="card">
-        <span class="icon">🖼️</span>
-        <h3>License-safe images</h3>
-        <p>Every draft comes with a matching stock photo from Openverse or Pexels, with license and attribution details included.</p>
-      </div>
-      <div class="card">
-        <span class="icon">⚙️</span>
-        <h3>Tuned to your taste</h3>
-        <p>Pick tone (insightful, casual, bold, technical), length, and how many variants you want. Copy the one you like straight into LinkedIn.</p>
+    </section>
+
+    <section class="bento-section" id="inside">
+      <h2 class="lin-head"><strong>Every detail pulls its weight.</strong> Small systems working together, so posting takes minutes instead of an afternoon.</h2>
+      <div class="bento">
+        <div class="bento-card b-span4">
+          <div class="b-vignette v-lib">
+            <div class="lib-row"><span class="lr-line" style="width:64%"></span><span class="badge" id="lib-flip">draft</span></div>
+            <div class="lib-row"><span class="lr-line" style="width:78%"></span><span class="badge ok">posted</span></div>
+            <div class="lib-row"><span class="lr-line" style="width:52%"></span><span class="badge">draft</span></div>
+          </div>
+          <h3>A library for the keepers</h3>
+          <p>Save the drafts worth keeping, post them when the timing's right, and always see what's already gone out.</p>
+        </div>
+
+        <div class="bento-card b-span2">
+          <div class="b-vignette v-words">
+            <div class="w-labels"><span>100 words</span><span>200 words</span></div>
+            <div class="w-track"><div class="w-fill"></div></div>
+          </div>
+          <h3>Any length you need</h3>
+          <p>Set a word range — from a two-liner to an article draft.</p>
+        </div>
+
+        <div class="bento-card b-span2">
+          <div class="b-vignette v-tones" id="v-tones">
+            <span class="tone-pill on">Insightful</span>
+            <span class="tone-pill">Casual</span>
+            <span class="tone-pill">Bold</span>
+            <span class="tone-pill">Technical</span>
+          </div>
+          <h3>Your tone, dialed in</h3>
+          <p>Four voices, one dropdown away.</p>
+        </div>
+
+        <div class="bento-card b-span4">
+          <div class="b-vignette v-src">
+            <div class="src-line s1"><span class="src-tag t-blue">SOURCE</span> reuters.com/business/housing-inventory-climbs…</div>
+            <div class="src-line s2"><span class="src-tag t-purple">IMAGE</span> Photo by Anna K. on Pexels — free commercial use</div>
+            <div class="src-line s3"><span class="src-tag t-green">AUTO</span> Linked and credited in every draft</div>
+          </div>
+          <h3>Receipts included</h3>
+          <p>Every post links its source article, and every image ships with its license and photographer credit.</p>
+        </div>
       </div>
     </section>
 
     <section class="steps" id="how">
       <h2>How it works</h2>
       <ol>
-        <li><strong>Paste your material</strong>A meeting transcript, voice memo transcription, or rough notes — anything in your own words.</li>
-        <li><strong>Pick your settings</strong>Tone, length, number of variants, and how far back to look for news.</li>
-        <li><strong>We do the reading</strong>Fresh AI news is gathered and matched against your themes and opinions.</li>
-        <li><strong>Copy and post</strong>Review the drafts, grab the image, paste into LinkedIn. Done.</li>
+        <li class="sc-blue"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="sc-num">01</span></div><strong>Paste your material</strong>A meeting transcript, voice memo transcription, or rough notes — anything in your own words.</li>
+        <li class="sc-purple"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><span class="sc-num">02</span></div><strong>Pick your settings</strong>Tone, length, number of variants, and how far back to look for news.</li>
+        <li class="sc-orange"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2V6"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg></span><span class="sc-num">03</span></div><strong>We do the reading</strong>Fresh news about your topics is gathered and matched against your themes and opinions.</li>
+        <li class="sc-green"><div class="sc-top"><span class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span><span class="sc-num">04</span></div><strong>Post it</strong>Review the drafts, grab the image, publish to LinkedIn with one click. Done.</li>
       </ol>
+
+      <div class="demo-wrap">
+        <div class="demo-window">
+          <div class="demo-bar">
+            <span></span><span></span><span></span>
+            <div class="demo-url">postpilot — generator</div>
+          </div>
+          <div class="demo-body" id="demo-stage"></div>
+        </div>
+      </div>
     </section>
 
     <section class="examples" id="examples">
       <h2>Example output</h2>
-      <p class="examples-note">Sample drafts generated from a product-meeting transcript, reacting to real AI headlines. Each comes with a license-safe stock image and attribution.</p>
+      <p class="examples-note">Sample drafts on three different topics — each generated from short notes, reacting to a real headline, with a license-safe stock image and attribution.</p>
       <div class="examples-grid">
 
         <div class="post-card">
           <div class="post-header">
-            <h3>Insightful · 150 words</h3>
+            <h3>Insightful · 100–200 words</h3>
             <span class="badge">example</span>
           </div>
           <img class="post-image" src="https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Engineer working with code projected across her face" onerror="this.style.display='none'">
@@ -81,28 +167,54 @@ Ship one feature that quietly saves thirty seconds. Skip the five that feel like
 
 Where have you seen AI actually reduce friction — not just add theater?
 
+Source: https://www.theverge.com/ai-copilot-launches
+
 #AI #ProductManagement #ArtificialIntelligence #UX</div>
           <div class="post-meta">Based on: AI copilot launches roundup (example) · Image: Pexels — Pexels License (free commercial use) — Photo by ThisIsEngineering on Pexels</div>
         </div>
 
         <div class="post-card">
           <div class="post-header">
-            <h3>Bold · 80 words</h3>
+            <h3>Bold · 60–100 words</h3>
             <span class="badge">example</span>
           </div>
-          <img class="post-image" src="https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Close-up of a blue circuit board" onerror="this.style.display='none'">
-          <div class="post-body">Hot take: your product hasn't earned an AI chatbot yet.
+          <img class="post-image" src="https://images.pexels.com/photos/3483098/pexels-photo-3483098.jpeg?auto=compress&cs=tinysrgb&w=800" alt="US dollar bills" onerror="this.style.display='none'">
+          <div class="post-body">Hot take: the new budgeting app of the week won't fix anyone's finances.
 
-New research this week shows most users abandon in-app assistants within two sessions. Not surprising. We keep bolting AI onto flows before nailing the boring basics — empty states, error messages, onboarding that makes sense.
+This week's survey says 60% of users abandon finance apps within a month. Of course they do. Tools don't change behavior — defaults do.
 
-AI should remove steps. Not add a shiny thing you have to talk to.
+The winning strategy still fits on an index card: spend less than you earn, automate the savings, buy boring index funds, wait.
 
-No sacred AI cows. If it doesn't move activation, it goes.
+The hardest part was never knowledge. It's patience.
 
-What would you cut from your product tomorrow?
+What's the money habit that actually stuck for you?
 
-#AI #ProductStrategy #UX</div>
-          <div class="post-meta">Based on: In-app AI assistant retention study (example) · Image: Pexels — Pexels License (free commercial use) — Photo by Pixabay on Pexels</div>
+Source: https://www.cnbc.com/finance-app-retention-survey
+
+#PersonalFinance #Investing #MoneyHabits</div>
+          <div class="post-meta">Based on: Finance app retention survey (example) · Image: Pexels — Pexels License (free commercial use) — Photo by John Guccione on Pexels</div>
+        </div>
+
+        <div class="post-card">
+          <div class="post-header">
+            <h3>Casual · 100–200 words</h3>
+            <span class="badge">example</span>
+          </div>
+          <img class="post-image" src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800" alt="House with a front lawn" onerror="this.style.display='none'">
+          <div class="post-body">Everyone keeps asking me when to buy a house, like there's a magic date circled on some calendar.
+
+This week's housing report shows inventory finally climbing in most metros. Good news! And also — it changes almost nothing about the real question.
+
+Buy when your life needs it and the math works. That's it. Renting isn't throwing money away; it's paying for flexibility. Owning isn't a guaranteed investment; it's a lifestyle choice with a mortgage attached.
+
+The thing nobody wants to hear: we massively underbuild housing, then act shocked at prices. Zoning reform would do more for affordability than any first-time-buyer program.
+
+Are you waiting on the market, or waiting on your life?
+
+Source: https://www.realtor.com/june-housing-inventory-report
+
+#RealEstate #Housing #HomeBuying</div>
+          <div class="post-meta">Based on: June housing inventory report (example) · Image: Pexels — Pexels License (free commercial use) — Photo by Binyamin Mellish on Pexels</div>
         </div>
 
       </div>
@@ -113,5 +225,287 @@ What would you cut from your product tomorrow?
   <footer>
     <div class="container">PostPilot — built by Miguel. Drafts are suggestions; always review before posting.</div>
   </footer>
+
+  <style>
+  .demo-wrap { max-width: 760px; margin: 44px auto 0; position: relative; }
+    .demo-wrap::before {
+      content: ""; position: absolute; inset: -50px -70px; z-index: -1;
+      background:
+        radial-gradient(ellipse 45% 55% at 22% 40%, rgba(79,143,247,0.16), transparent),
+        radial-gradient(ellipse 40% 50% at 62% 70%, rgba(139,92,246,0.13), transparent),
+        radial-gradient(ellipse 35% 45% at 88% 30%, rgba(236,72,153,0.10), transparent);
+      filter: blur(38px); pointer-events: none;
+    }
+    .demo-cols { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
+    @media (max-width: 640px) { .demo-cols { grid-template-columns: 1fr; } }
+    .demo-panel {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .demo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .demo-chips span {
+      font-size: 0.68rem; color: var(--muted); padding: 3px 9px;
+      border: 1px solid var(--border); border-radius: 20px; background: var(--surface);
+    }
+    .demo-empty {
+      color: var(--muted); font-size: 0.85rem; text-align: center;
+      padding: 90px 16px; border: 1px dashed var(--border); border-radius: 10px;
+    }
+    .demo-post-card {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; animation: rise 0.4s ease;
+    }
+    .demo-post-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 0.78rem;
+    }
+    .demo-mini-btns { display: flex; gap: 6px; }
+    .demo-mini-btns i {
+      font-style: normal; font-size: 0.68rem; padding: 4px 9px;
+      border: 1px solid var(--border); border-radius: 6px; color: var(--muted);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .demo-mini-btns i.demo-blue {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #fff; border: none;
+    }
+    .demo-post-card img, .demo-li-card img {
+      width: 100%; height: 90px; object-fit: cover; display: block;
+    }
+    .demo-post-text {
+      padding: 11px 12px; font-size: 0.76rem; line-height: 1.5; color: var(--text);
+    }
+    .demo-post-text small { color: var(--muted); }
+    .demo-li-card {
+      background: #fff; border-radius: 10px; overflow: hidden;
+      color: #1c1e21; animation: rise 0.4s ease;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+    }
+    .demo-li-head {
+      display: flex; align-items: center; gap: 9px; padding: 10px 12px;
+    }
+    .demo-avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #fff; font-weight: 700; display: flex;
+      align-items: center; justify-content: center; font-size: 0.9rem;
+    }
+    .demo-li-head b { font-size: 0.78rem; display: block; line-height: 1.2; }
+    .demo-li-head small { font-size: 0.66rem; color: #666; }
+    .demo-li-logo {
+      margin-left: auto; background: #0a66c2; color: #fff; font-weight: 800;
+      border-radius: 3px; padding: 1px 5px; font-size: 0.75rem;
+    }
+    .demo-li-text { padding: 0 12px 9px; font-size: 0.74rem; line-height: 1.45; }
+    .demo-li-actions {
+      display: flex; justify-content: space-around; padding: 7px 8px;
+      border-top: 1px solid #e5e5e5; font-size: 0.66rem; color: #555;
+    }
+    .demo-toast {
+      margin-top: 10px; text-align: center; font-size: 0.8rem;
+      color: var(--green); font-weight: 600; animation: rise 0.3s ease;
+    }
+    .demo-window {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+    }
+    .demo-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .demo-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .demo-bar span:nth-child(1) { background: #e0655a; }
+    .demo-bar span:nth-child(2) { background: #e0b25a; }
+    .demo-bar span:nth-child(3) { background: #5ac07a; }
+    .demo-url { margin-left: 10px; font-size: 0.75rem; color: var(--muted); }
+    .demo-body { padding: 22px; min-height: 290px; }
+    .demo-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .demo-input {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px; min-height: 110px;
+      font-size: 0.88rem; color: var(--text); line-height: 1.5;
+    }
+    .demo-caret {
+      display: inline-block; width: 2px; height: 1em; background: var(--accent);
+      vertical-align: text-bottom; animation: demoBlink 0.7s steps(1) infinite;
+    }
+    @keyframes demoBlink { 50% { opacity: 0; } }
+    .demo-btn {
+      display: inline-block; margin-top: 14px; padding: 10px 22px;
+      border-radius: 9px; font-weight: 600; font-size: 0.9rem; color: #fff;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .demo-btn.demo-clicked { transform: scale(0.94); filter: brightness(1.3); }
+    .demo-btn.demo-green { background: var(--green); }
+    .demo-progress { text-align: center; padding: 60px 0; }
+    .demo-progress .spinner { margin-bottom: 16px; }
+    .demo-progress p { color: var(--muted); font-size: 0.9rem; min-height: 1.5em; }
+    .demo-post { animation: rise 0.4s ease; }
+    .demo-img {
+      height: 96px; border-radius: 9px; margin-bottom: 12px;
+      background: linear-gradient(120deg, rgba(79,143,247,0.55), rgba(124,92,255,0.55));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+    }
+    .demo-line {
+      height: 9px; border-radius: 5px; background: var(--surface-2);
+      margin-bottom: 8px; animation: rise 0.4s ease;
+    }
+    .demo-check {
+      text-align: center; padding: 52px 0; animation: rise 0.4s ease;
+    }
+    .demo-check .demo-circle {
+      width: 62px; height: 62px; border-radius: 50%; margin: 0 auto 16px;
+      background: var(--green); color: #fff; font-size: 1.9rem;
+      display: flex; align-items: center; justify-content: center;
+      animation: demoPop 0.35s ease;
+    }
+    @keyframes demoPop { from { transform: scale(0.4); } to { transform: scale(1); } }
+    .demo-check p { color: var(--muted); font-size: 0.92rem; }
+    .demo-check strong { color: var(--text); }
+  </style>
+
+  <script>
+  (() => {
+    const stage = document.getElementById("demo-stage");
+    if (!stage) return;
+    const NOTES = "Everyone wants to bolt AI onto everything. I'd rather ship one feature that quietly saves 30 seconds...";
+    const PROGRESS = ["Reading your notes...", "Gathering live news about your topics...",
+                      "Building your voice profile...", "Writing variant 1 of 1...", "Finding image for variant 1..."];
+    const IMG = "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=500";
+    const POST_TEXT = `Most AI copilots are demos, not products.<br><br>` +
+      `A demo needs to impress once. A product needs to work the thousandth time, ` +
+      `on a stressed Tuesday morning.<br><br>` +
+      `<small>Source: theverge.com/ai-copilots</small><br>` +
+      `<span style="color:var(--accent)">#AI #ProductManagement #UX</span>`;
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    function shell(resultsHtml) {
+      stage.innerHTML = `<div class="demo-cols">
+        <div class="demo-panel">
+          <div class="demo-label">Your transcript or notes</div>
+          <div class="demo-input" style="min-height:84px; font-size:0.76rem;"><span id="demo-typed"></span><span class="demo-caret" id="demo-caret"></span></div>
+          <div class="demo-chips"><span>Insightful</span><span>100–200 words</span><span>1 variant</span><span>2 days</span></div>
+          <div style="text-align:center"><span class="demo-btn" id="demo-gen" style="padding:8px 18px; font-size:0.8rem;">Generate posts</span></div>
+        </div>
+        <div id="demo-results">${resultsHtml}</div>
+      </div>`;
+    }
+
+    async function typeStage() {
+      shell(`<div class="demo-empty">Your generated posts will appear here.</div>`);
+      const typed = document.getElementById("demo-typed");
+      for (let i = 0; i <= NOTES.length; i += 2) {
+        typed.textContent = NOTES.slice(0, i);
+        await sleep(26);
+      }
+      await sleep(350);
+      document.getElementById("demo-gen").classList.add("demo-clicked");
+      await sleep(450);
+      document.getElementById("demo-caret").style.display = "none";
+    }
+
+    async function progressStage() {
+      const res = document.getElementById("demo-results");
+      res.innerHTML = `<div class="demo-progress" style="padding:40px 0;"><div class="spinner"></div><p id="demo-msg"></p></div>`;
+      const msg = document.getElementById("demo-msg");
+      for (const m of PROGRESS) { msg.textContent = m; await sleep(750); }
+    }
+
+    async function postStage() {
+      const res = document.getElementById("demo-results");
+      res.innerHTML = `<div class="demo-post-card">
+        <div class="demo-post-head"><b>Variant 1</b>
+          <span class="demo-mini-btns"><i>Copy text</i><i>Save to library</i><i class="demo-blue" id="demo-li">Post to LinkedIn</i></span>
+        </div>
+        <img src="${IMG}" alt="" onerror="this.style.display='none'">
+        <div class="demo-post-text">${POST_TEXT}</div>
+      </div>`;
+      await sleep(2100);
+      const btn = document.getElementById("demo-li");
+      btn.classList.add("demo-clicked");
+      await sleep(300);
+      btn.textContent = "Posting…";
+      await sleep(900);
+    }
+
+    async function linkedinStage() {
+      const res = document.getElementById("demo-results");
+      res.innerHTML = `<div class="demo-li-card">
+        <div class="demo-li-head">
+          <span class="demo-avatar">M</span>
+          <div><b>Miguel Reese</b><small>Just now · 🌐</small></div>
+          <span class="demo-li-logo">in</span>
+        </div>
+        <div class="demo-li-text">Most AI copilots are demos, not products.<br><br>A demo needs to impress once. A product needs to work the thousandth time...</div>
+        <img src="${IMG}" alt="" onerror="this.style.display='none'">
+        <div class="demo-li-actions"><span>👍 Like</span><span>💬 Comment</span><span>🔁 Repost</span><span>📤 Send</span></div>
+      </div>
+      <div class="demo-toast">✓ Posted to LinkedIn</div>`;
+      await sleep(3200);
+    }
+
+    (async function loop() {
+      for (;;) {
+        await typeStage();
+        await progressStage();
+        await postStage();
+        await linkedinStage();
+      }
+    })();
+  })();
+
+  // LinkedIn status in nav
+  (() => {
+    const btn = document.getElementById("li-connect");
+    if (!btn) return;
+    fetch("/api/linkedin/status").then(r => r.json()).then(s => {
+      if (!s.configured) { btn.style.display = "none"; return; }
+      if (s.connected) { btn.textContent = `LinkedIn: ${s.name} ✓`; btn.removeAttribute("href"); }
+    }).catch(() => {});
+  })();
+
+  // Bento vignette loops
+  (() => {
+    const pills = document.querySelectorAll("#v-tones .tone-pill");
+    if (pills.length) {
+      let t = 0;
+      setInterval(() => {
+        pills[t].classList.remove("on");
+        t = (t + 1) % pills.length;
+        pills[t].classList.add("on");
+      }, 1600);
+    }
+
+    const flip = document.getElementById("lib-flip");
+    if (flip) {
+      setInterval(() => {
+        const posted = flip.classList.toggle("ok");
+        flip.textContent = posted ? "posted" : "draft";
+      }, 3200);
+    }
+  })();
+
+  // Subtle scroll-reveal for sections
+  (() => {
+    const els = document.querySelectorAll(
+      ".lin-item, .steps li, .examples .post-card, .demo-wrap, .lin-head, .steps h2, .examples h2, .bento-card");
+    els.forEach((el, i) => {
+      el.classList.add("reveal");
+      el.style.transitionDelay = (i % 3) * 50 + "ms";
+    });
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        e.target.classList.toggle("revealed", e.isIntersecting);
+      });
+    }, { threshold: 0, rootMargin: "0px 0px -40px 0px" });
+    els.forEach((el) => obs.observe(el));
+  })();
+  </script>
 </body>
 </html>

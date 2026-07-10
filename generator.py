@@ -29,21 +29,6 @@ class Settings:
     news_lookback_hours: int = 48
     max_news_items: int = 6
     images: bool = True
-SAMPLE_TRANSCRIPT = """\
-Sarah: Where are we with the onboarding rewrite?
-Miguel: Getting there. Everyone wants to bolt AI onto the flow, but I don't think
-we've earned it yet. We haven't nailed the boring basics - empty states, error
-messages - and now there's pressure to drop a chatbot in the corner. I'm allergic
-to that. AI should remove steps, not add a shiny thing you have to talk to.
-Sarah: Leadership sees competitors shipping copilots everywhere.
-Miguel: Most of them are demos, not products. That's my whole thing lately - the
-gap between a demo that wows in a meeting and something that survives contact with
-real users on a stressed Tuesday morning. I'd rather ship one AI feature that
-quietly saves thirty seconds than five that feel like managing a junior intern.
-The teams that win aren't the ones with the fanciest model - they're obsessive
-about where AI reduces friction versus where it's just theater. And we measure it.
-If it doesn't move activation, we rip it out. No sacred AI cows.
-"""
 @dataclass
 class Signal:
     kind: str; lane: str; text: str
@@ -106,11 +91,59 @@ def _fetch_rss(s: Settings):
                 (dt or datetime.now(timezone.utc)).date().isoformat(), 1.0)))
     items.sort(key=lambda t: t[0], reverse=True)
     return [sig for _, sig in items[:s.max_news_items]]
-def fetch_trending(s: Settings):
+def derive_search_queries(text, n=4):
+    """Turn the user's notes into news search queries (any topic)."""
+    text = (text or "").strip()
+    if not text: return []
+    if llm_available():
+        try:
+            raw = llm_complete(
+                "Read these notes and identify the main topics the writer cares "
+                f"about. Return ONLY a JSON array of 2-{n} short news-search "
+                "queries (2-5 words each), no explanations. "
+                'Example: ["remote work productivity", "college tuition costs"]'
+                "\n\nNOTES:\n" + text[:4000],
+                system="You extract news search topics from notes. Output only "
+                       "a JSON array of strings.",
+                max_tokens=150, temperature=0.2)
+            cleaned = re.sub(r"^```[a-zA-Z]*\n?|\n?```$", "", raw.strip())
+            try:
+                arr = json.loads(cleaned)
+            except Exception:
+                arr = re.findall(r'"([^"]{3,60})"', cleaned)
+            arr = [str(q).strip() for q in arr if str(q).strip()]
+            if arr: return arr[:n]
+        except Exception as e:
+            print(f"  [warn] query derivation failed ({e}); using keywords.")
+    words = list(_keywords(text))
+    return [" ".join(words[:4])] if words else []
+def fetch_news_for(query, s: Settings):
+    """Google News RSS for an arbitrary topic - no API key needed."""
+    if feedparser is None: return []
+    from urllib.parse import quote_plus
+    days = max(1, s.news_lookback_hours // 24)
+    url = ("https://news.google.com/rss/search?q=" + quote_plus(query) +
+           f"+when:{days}d&hl=en-US&gl=US&ceid=US:en")
+    try:
+        feed = feedparser.parse(url)
+    except Exception:
+        return []
+    out = []
+    for e in feed.entries[:s.max_news_items]:
+        tm = getattr(e, "published_parsed", None)
+        dt = datetime(*tm[:6], tzinfo=timezone.utc) if tm else datetime.now(timezone.utc)
+        title = getattr(e, "title", "")
+        if not title: continue
+        out.append(Signal("news", CONTENT,
+            _strip_html(getattr(e, "summary", "")) or title,
+            title, getattr(e, "link", ""), dt.date().isoformat(),
+            1.0, {"query": query}))
+    return out
+def fetch_trending(s: Settings, query=None):
     if requests is None: return []
     try:
         r = requests.get("https://hn.algolia.com/api/v1/search_by_date", params={
-            "query": "AI OR LLM OR OpenAI OR Anthropic", "tags": "story",
+            "query": query or "AI OR LLM OR OpenAI OR Anthropic", "tags": "story",
             "numericFilters": "points>50", "hitsPerPage": 6}, timeout=15)
         r.raise_for_status()
     except Exception: return []
@@ -147,14 +180,32 @@ def fetch_local_voice(directory, kind):
         except OSError: continue
         if t: out.append(Signal(kind, VOICE, t, os.path.basename(p), "", _today(), 1.5))
     return out
-def gather_signals(s: Settings, transcript_text):
+def gather_signals(s: Settings, transcript_text, queries=None):
     print("-> Gathering sources...")
     content = []
-    for fn in (fetch_ai_news, fetch_trending, fetch_arxiv):
-        try: got = fn(s)
-        except Exception as e: print(f"  [warn] {fn.__name__} failed: {e}"); got = []
-        if got: print(f"  . {fn.__name__}: {len(got)} signal(s)")
-        content.extend(got)
+    if queries:
+        # Topic-driven: search the news for what the user's notes are about
+        seen = set()
+        for q in queries:
+            try: got = fetch_news_for(q, s)
+            except Exception as e: print(f"  [warn] news '{q}' failed: {e}"); got = []
+            for sig in got:
+                key = (sig.title or sig.url).lower()
+                if key and key not in seen:
+                    seen.add(key); content.append(sig)
+            if got: print(f"  . news '{q}': {len(got)} signal(s)")
+        try:
+            trending = fetch_trending(s, query=" OR ".join(queries)[:120])
+        except Exception:
+            trending = []
+        content.extend(trending)
+    else:
+        # Legacy default (CLI): AI-focused sources
+        for fn in (fetch_ai_news, fetch_trending, fetch_arxiv):
+            try: got = fn(s)
+            except Exception as e: print(f"  [warn] {fn.__name__} failed: {e}"); got = []
+            if got: print(f"  . {fn.__name__}: {len(got)} signal(s)")
+            content.extend(got)
     voice = fetch_transcript(transcript_text)
     voice += fetch_local_voice("data/past_posts", "past_post")
     voice += fetch_local_voice("data/notes", "notes")
@@ -213,7 +264,7 @@ class Topic:
             blk += "\n\nRELATED DISCUSSION:\n" + "\n".join(f"- ({s.kind}) {s.short(140)}" for s in self.supporting)
         return blk
 def select_topics(content, n):
-    primaries = [s for s in content if s.kind in ("ai_news","arxiv")] or list(content)
+    primaries = [s for s in content if s.kind in ("ai_news","arxiv","news")] or list(content)
     supports = [s for s in content if s.kind == "trending"]
     primaries = sorted(primaries, key=lambda s: s.weight, reverse=True)
     topics = []
@@ -348,6 +399,10 @@ just report it.
 === THE NEWS THEY'RE REACTING TO ===
 {topic.to_prompt_block()}
 === RULES ===
+- If the person's profile above is thin, vague, or just a topic, do NOT
+  refuse and do NOT comment on the lack of information. Simply write as a
+  thoughtful professional who cares about that topic. You ALWAYS output a
+  finished post and nothing else - never meta-commentary about the inputs.
 - Open with a scroll-stopping first line. No "I'm excited to share".
 - {TONE_GUIDE.get(s.tone, TONE_GUIDE['insightful'])}
 - Length: {LENGTH_GUIDE.get(s.length, LENGTH_GUIDE['medium'])}
@@ -371,7 +426,10 @@ just report it.
                 "capitalization and punctuation: every sentence starts with a capital letter, "
                 "contractions have apostrophes (don't, isn't, they're), proper nouns are "
                 "capitalized (Microsoft, ChatGPT, AI). A person's voice is their ideas and "
-                "word choice, never sloppy mechanics.",
+                "word choice, never sloppy mechanics. You always deliver the post - with "
+                "rich profile material you mimic the person, with thin material you write "
+                "as a smart professional on the topic. Refusing or explaining is never "
+                "an acceptable output.",
                 max_tokens=getattr(s, "max_tokens", 700), temperature=0.8)
         except Exception as e:
             print(f"  [warn] LLM generation failed ({e}); using template.")
@@ -459,8 +517,7 @@ def main():
     if args.transcript and os.path.exists(args.transcript):
         with open(args.transcript, "r", encoding="utf-8") as f: transcript_text = f.read()
     else:
-        if args.transcript: print(f"  [info] '{args.transcript}' not found; using built-in sample.")
-        transcript_text = SAMPLE_TRANSCRIPT
+        raise SystemExit("Provide a transcript: python generator.py --transcript notes.txt")
     if not llm_available():
         print("  [info] No ANTHROPIC_API_KEY set - fallback mode (free news + template).\n")
     run(Settings(tone=args.tone, length=args.length, variants=max(1, min(5, args.variants)),
