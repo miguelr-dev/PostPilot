@@ -176,7 +176,9 @@ def build_voice_profile(voice_signals):
             raw = llm_complete("Read the material and return ONLY a JSON object with keys "
                 "`summary` (2-3 sentences), `themes` (array), `opinions` (array of stances "
                 "they actually expressed), `style_notes` (array about sentence length, tone, "
-                "hooks, hashtag habits).\n\n" + corpus,
+                "hooks, hashtag habits). In style_notes, capture voice as vocabulary, rhythm "
+                "and attitude - IGNORE mechanical sloppiness like lowercase typing or missing "
+                "apostrophes; that comes from quick note-taking, not their published style.\n\n" + corpus,
                 system="You profile how a person thinks and writes so someone could draft in "
                 "their voice. Be specific. Don't invent beliefs.", max_tokens=1200, temperature=0.3)
             d = _loads_lenient(raw)
@@ -348,6 +350,11 @@ just report it.
 - Tie the news to one of their themes or opinions explicitly.
 - Flawless grammar, spelling, and punctuation. Complete sentences only -
   no fragments unless used deliberately once for punch.
+- CRITICAL: their "voice" means their ideas, opinions, and vocabulary - NOT
+  their typing habits. Even if their source material is lowercase, missing
+  apostrophes, or sloppily punctuated, YOU always write with standard
+  capitalization (every sentence starts with a capital letter) and correct
+  apostrophes (don't, isn't, they're). No exceptions.
 - Structure: paragraphs of 1-3 sentences each, with a blank line between
   EVERY paragraph. Never write a wall of text. One idea per paragraph, in
   logical order: hook, context, insight, takeaway, question.
@@ -356,7 +363,11 @@ just report it.
 - Before finishing, re-read the post and fix any grammatical or flow issues.
 - Output ONLY the post text."""
             return llm_complete(prompt, system="You are a ghostwriter who writes authentic, "
-                "human LinkedIn posts. You never sound like an AI.",
+                "human LinkedIn posts. You never sound like an AI. You ALWAYS use standard "
+                "capitalization and punctuation: every sentence starts with a capital letter, "
+                "contractions have apostrophes (don't, isn't, they're), proper nouns are "
+                "capitalized (Microsoft, ChatGPT, AI). A person's voice is their ideas and "
+                "word choice, never sloppy mechanics.",
                 max_tokens=getattr(s, "max_tokens", 700), temperature=0.8)
         except Exception as e:
             print(f"  [warn] LLM generation failed ({e}); using template.")
@@ -375,6 +386,11 @@ def format_post(text, max_chars=2900):
     text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"\1 (\2)", text)
     text = text.replace("`", "")
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    # Safety net: capitalize the first letter of every sentence/paragraph
+    # and fix standalone "i", even if the model mimicked lowercase notes.
+    text = re.sub(r"(^|[.!?]\s+|\n\s*)([a-z])",
+                  lambda m: m.group(1) + m.group(2).upper(), text)
+    text = re.sub(r"\bi\b", "I", text)
     if len(text) > max_chars: text = text[:max_chars].rsplit("\n", 1)[0].rstrip()
     return text
 def save_run(drafts, s: Settings):
