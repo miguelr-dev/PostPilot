@@ -220,6 +220,7 @@ def _run_job(job_id, settings, transcript_text):
         topics = g.select_topics(content, settings.variants)
 
         drafts = []
+        used_images = set()
         for i, topic in enumerate(topics, 1):
             _job_update(job_id, progress=f"Writing variant {i} of {len(topics)}...")
             text = g.format_post(g.generate_post(topic, voice, settings),
@@ -230,7 +231,10 @@ def _run_job(job_id, settings, transcript_text):
                 try:
                     _job_update(job_id, progress=f"Finding image for variant {i}...")
                     q, _alt = g.build_image_query(topic, post_text=text)
-                    img = g.find_image(q, i, context=text)
+                    img = g.find_image(q, i, context=text,
+                                       exclude=used_images)
+                    if img and img.get("url"):
+                        used_images.add(img["url"])
                     # Give the image a unique name so library drafts keep
                     # their picture after later runs overwrite variant-N.jpg
                     if img and img.get("local_path"):

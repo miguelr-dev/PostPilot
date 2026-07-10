@@ -304,9 +304,13 @@ def _pick_best_image(candidates, context):
     except Exception as e:
         print(f"  [warn] image ranking failed ({e}); using first result.")
         return candidates[0]
-def find_image(query, index, context=""):
-    """Return dict {local_path, source, license, attribution, page, url, query} or None."""
-    candidates = _search_pexels(query, 6) or _search_openverse(query, 6)
+def find_image(query, index, context="", exclude=None):
+    """Return dict {local_path, source, license, attribution, page, url, query} or None.
+    `exclude` is a set of image URLs already used by other variants."""
+    candidates = _search_pexels(query, 15) or _search_openverse(query, 15)
+    if exclude:
+        fresh = [c for c in candidates if c.get("url") not in exclude]
+        if fresh: candidates = fresh
     if not candidates: return None
     info = _pick_best_image(candidates, context)
     info["query"] = query
