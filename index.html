@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PostPilot — LinkedIn posts in your voice</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f8ff7'/%3E%3Ctext x='50' y='72' font-size='62' font-weight='bold' font-family='Arial' fill='white' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -56,6 +57,16 @@
         <li><strong>We do the reading</strong>Fresh AI news is gathered and matched against your themes and opinions.</li>
         <li><strong>Copy and post</strong>Review the drafts, grab the image, paste into LinkedIn. Done.</li>
       </ol>
+
+      <div class="demo-wrap">
+        <div class="demo-window">
+          <div class="demo-bar">
+            <span></span><span></span><span></span>
+            <div class="demo-url">postpilot — generator</div>
+          </div>
+          <div class="demo-body" id="demo-stage"></div>
+        </div>
+      </div>
     </section>
 
     <section class="examples" id="examples">
@@ -65,7 +76,7 @@
 
         <div class="post-card">
           <div class="post-header">
-            <h3>Insightful · 150 words</h3>
+            <h3>Insightful · 100–200 words</h3>
             <span class="badge">example</span>
           </div>
           <img class="post-image" src="https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Engineer working with code projected across her face" onerror="this.style.display='none'">
@@ -81,13 +92,15 @@ Ship one feature that quietly saves thirty seconds. Skip the five that feel like
 
 Where have you seen AI actually reduce friction — not just add theater?
 
+Source: https://www.theverge.com/ai-copilot-launches
+
 #AI #ProductManagement #ArtificialIntelligence #UX</div>
           <div class="post-meta">Based on: AI copilot launches roundup (example) · Image: Pexels — Pexels License (free commercial use) — Photo by ThisIsEngineering on Pexels</div>
         </div>
 
         <div class="post-card">
           <div class="post-header">
-            <h3>Bold · 80 words</h3>
+            <h3>Bold · 60–100 words</h3>
             <span class="badge">example</span>
           </div>
           <img class="post-image" src="https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Close-up of a blue circuit board" onerror="this.style.display='none'">
@@ -101,6 +114,8 @@ No sacred AI cows. If it doesn't move activation, it goes.
 
 What would you cut from your product tomorrow?
 
+Source: https://venturebeat.com/ai-assistant-retention-study
+
 #AI #ProductStrategy #UX</div>
           <div class="post-meta">Based on: In-app AI assistant retention study (example) · Image: Pexels — Pexels License (free commercial use) — Photo by Pixabay on Pexels</div>
         </div>
@@ -113,5 +128,232 @@ What would you cut from your product tomorrow?
   <footer>
     <div class="container">PostPilot — built by Miguel. Drafts are suggestions; always review before posting.</div>
   </footer>
+
+  <style>
+    .demo-wrap { max-width: 760px; margin: 44px auto 0; }
+    .demo-cols { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
+    @media (max-width: 640px) { .demo-cols { grid-template-columns: 1fr; } }
+    .demo-panel {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .demo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .demo-chips span {
+      font-size: 0.68rem; color: var(--muted); padding: 3px 9px;
+      border: 1px solid var(--border); border-radius: 20px; background: var(--surface);
+    }
+    .demo-empty {
+      color: var(--muted); font-size: 0.85rem; text-align: center;
+      padding: 90px 16px; border: 1px dashed var(--border); border-radius: 10px;
+    }
+    .demo-post-card {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; animation: rise 0.4s ease;
+    }
+    .demo-post-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 0.78rem;
+    }
+    .demo-mini-btns { display: flex; gap: 6px; }
+    .demo-mini-btns i {
+      font-style: normal; font-size: 0.68rem; padding: 4px 9px;
+      border: 1px solid var(--border); border-radius: 6px; color: var(--muted);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .demo-mini-btns i.demo-blue {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #fff; border: none;
+    }
+    .demo-post-card img, .demo-li-card img {
+      width: 100%; height: 90px; object-fit: cover; display: block;
+    }
+    .demo-post-text {
+      padding: 11px 12px; font-size: 0.76rem; line-height: 1.5; color: var(--text);
+    }
+    .demo-post-text small { color: var(--muted); }
+    .demo-li-card {
+      background: #fff; border-radius: 10px; overflow: hidden;
+      color: #1c1e21; animation: rise 0.4s ease;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+    }
+    .demo-li-head {
+      display: flex; align-items: center; gap: 9px; padding: 10px 12px;
+    }
+    .demo-avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #fff; font-weight: 700; display: flex;
+      align-items: center; justify-content: center; font-size: 0.9rem;
+    }
+    .demo-li-head b { font-size: 0.78rem; display: block; line-height: 1.2; }
+    .demo-li-head small { font-size: 0.66rem; color: #666; }
+    .demo-li-logo {
+      margin-left: auto; background: #0a66c2; color: #fff; font-weight: 800;
+      border-radius: 3px; padding: 1px 5px; font-size: 0.75rem;
+    }
+    .demo-li-text { padding: 0 12px 9px; font-size: 0.74rem; line-height: 1.45; }
+    .demo-li-actions {
+      display: flex; justify-content: space-around; padding: 7px 8px;
+      border-top: 1px solid #e5e5e5; font-size: 0.66rem; color: #555;
+    }
+    .demo-toast {
+      margin-top: 10px; text-align: center; font-size: 0.8rem;
+      color: var(--green); font-weight: 600; animation: rise 0.3s ease;
+    }
+    .demo-window {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+    }
+    .demo-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .demo-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .demo-bar span:nth-child(1) { background: #e0655a; }
+    .demo-bar span:nth-child(2) { background: #e0b25a; }
+    .demo-bar span:nth-child(3) { background: #5ac07a; }
+    .demo-url { margin-left: 10px; font-size: 0.75rem; color: var(--muted); }
+    .demo-body { padding: 22px; min-height: 290px; }
+    .demo-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .demo-input {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px; min-height: 110px;
+      font-size: 0.88rem; color: var(--text); line-height: 1.5;
+    }
+    .demo-caret {
+      display: inline-block; width: 2px; height: 1em; background: var(--accent);
+      vertical-align: text-bottom; animation: demoBlink 0.7s steps(1) infinite;
+    }
+    @keyframes demoBlink { 50% { opacity: 0; } }
+    .demo-btn {
+      display: inline-block; margin-top: 14px; padding: 10px 22px;
+      border-radius: 9px; font-weight: 600; font-size: 0.9rem; color: #fff;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .demo-btn.demo-clicked { transform: scale(0.94); filter: brightness(1.3); }
+    .demo-btn.demo-green { background: var(--green); }
+    .demo-progress { text-align: center; padding: 60px 0; }
+    .demo-progress .spinner { margin-bottom: 16px; }
+    .demo-progress p { color: var(--muted); font-size: 0.9rem; min-height: 1.5em; }
+    .demo-post { animation: rise 0.4s ease; }
+    .demo-img {
+      height: 96px; border-radius: 9px; margin-bottom: 12px;
+      background: linear-gradient(120deg, rgba(79,143,247,0.55), rgba(124,92,255,0.55));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+    }
+    .demo-line {
+      height: 9px; border-radius: 5px; background: var(--surface-2);
+      margin-bottom: 8px; animation: rise 0.4s ease;
+    }
+    .demo-check {
+      text-align: center; padding: 52px 0; animation: rise 0.4s ease;
+    }
+    .demo-check .demo-circle {
+      width: 62px; height: 62px; border-radius: 50%; margin: 0 auto 16px;
+      background: var(--green); color: #fff; font-size: 1.9rem;
+      display: flex; align-items: center; justify-content: center;
+      animation: demoPop 0.35s ease;
+    }
+    @keyframes demoPop { from { transform: scale(0.4); } to { transform: scale(1); } }
+    .demo-check p { color: var(--muted); font-size: 0.92rem; }
+    .demo-check strong { color: var(--text); }
+  </style>
+
+  <script>
+  (() => {
+    const stage = document.getElementById("demo-stage");
+    if (!stage) return;
+    const NOTES = "Everyone wants to bolt AI onto everything. I'd rather ship one feature that quietly saves 30 seconds...";
+    const PROGRESS = ["Gathering live AI news...", "Building your voice profile...",
+                      "Matching news to your topics...", "Writing variant 1 of 1...", "Finding image for variant 1..."];
+    const IMG = "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=500";
+    const POST_TEXT = `Most AI copilots are demos, not products.<br><br>` +
+      `A demo needs to impress once. A product needs to work the thousandth time, ` +
+      `on a stressed Tuesday morning.<br><br>` +
+      `<small>Source: theverge.com/ai-copilots</small><br>` +
+      `<span style="color:var(--accent)">#AI #ProductManagement #UX</span>`;
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    function shell(resultsHtml) {
+      stage.innerHTML = `<div class="demo-cols">
+        <div class="demo-panel">
+          <div class="demo-label">Your transcript or notes</div>
+          <div class="demo-input" style="min-height:84px; font-size:0.76rem;"><span id="demo-typed"></span><span class="demo-caret" id="demo-caret"></span></div>
+          <div class="demo-chips"><span>Insightful</span><span>100–200 words</span><span>1 variant</span><span>2 days</span></div>
+          <div style="text-align:center"><span class="demo-btn" id="demo-gen" style="padding:8px 18px; font-size:0.8rem;">Generate posts</span></div>
+        </div>
+        <div id="demo-results">${resultsHtml}</div>
+      </div>`;
+    }
+
+    async function typeStage() {
+      shell(`<div class="demo-empty">Your generated posts will appear here.</div>`);
+      const typed = document.getElementById("demo-typed");
+      for (let i = 0; i <= NOTES.length; i += 2) {
+        typed.textContent = NOTES.slice(0, i);
+        await sleep(26);
+      }
+      await sleep(350);
+      document.getElementById("demo-gen").classList.add("demo-clicked");
+      await sleep(450);
+      document.getElementById("demo-caret").style.display = "none";
+    }
+
+    async function progressStage() {
+      const res = document.getElementById("demo-results");
+      res.innerHTML = `<div class="demo-progress" style="padding:40px 0;"><div class="spinner"></div><p id="demo-msg"></p></div>`;
+      const msg = document.getElementById("demo-msg");
+      for (const m of PROGRESS) { msg.textContent = m; await sleep(750); }
+    }
+
+    async function postStage() {
+      const res = document.getElementById("demo-results");
+      res.innerHTML = `<div class="demo-post-card">
+        <div class="demo-post-head"><b>Variant 1</b>
+          <span class="demo-mini-btns"><i>Copy text</i><i>Save to library</i><i class="demo-blue" id="demo-li">Post to LinkedIn</i></span>
+        </div>
+        <img src="${IMG}" alt="" onerror="this.style.display='none'">
+        <div class="demo-post-text">${POST_TEXT}</div>
+      </div>`;
+      await sleep(2100);
+      const btn = document.getElementById("demo-li");
+      btn.classList.add("demo-clicked");
+      await sleep(300);
+      btn.textContent = "Posting…";
+      await sleep(900);
+    }
+
+    async function linkedinStage() {
+      const res = document.getElementById("demo-results");
+      res.innerHTML = `<div class="demo-li-card">
+        <div class="demo-li-head">
+          <span class="demo-avatar">M</span>
+          <div><b>Miguel Reese</b><small>Just now · 🌐</small></div>
+          <span class="demo-li-logo">in</span>
+        </div>
+        <div class="demo-li-text">Most AI copilots are demos, not products.<br><br>A demo needs to impress once. A product needs to work the thousandth time...</div>
+        <img src="${IMG}" alt="" onerror="this.style.display='none'">
+        <div class="demo-li-actions"><span>👍 Like</span><span>💬 Comment</span><span>🔁 Repost</span><span>📤 Send</span></div>
+      </div>
+      <div class="demo-toast">✓ Posted to LinkedIn</div>`;
+      await sleep(3200);
+    }
+
+    (async function loop() {
+      for (;;) {
+        await typeStage();
+        await progressStage();
+        await postStage();
+        await linkedinStage();
+      }
+    })();
+  })();
+  </script>
 </body>
 </html>
