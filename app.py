@@ -153,6 +153,18 @@ def _serialize_draft(text, topic, img, draft_id):
     return d
 
 
+def _append_source(text, url):
+    """Add the source article link to the post text, just above the hashtags."""
+    if not url:
+        return text
+    lines = text.rstrip().split("\n")
+    if lines and lines[-1].lstrip().startswith("#"):
+        hashtags = lines.pop()
+        body = "\n".join(lines).rstrip()
+        return f"{body}\n\nSource: {url}\n\n{hashtags}"
+    return f"{text.rstrip()}\n\nSource: {url}"
+
+
 def _rank_topics_for_voice(content, voice, transcript_text, n):
     """Boost the weight of news signals most relevant to the user's
     themes/opinions so select_topics() favors them over generic top headlines."""
@@ -225,6 +237,7 @@ def _run_job(job_id, settings, transcript_text):
             _job_update(job_id, progress=f"Writing variant {i} of {len(topics)}...")
             text = g.format_post(g.generate_post(topic, voice, settings),
                                  max_chars=getattr(settings, "max_chars", 2900))
+            text = _append_source(text, topic.primary.url)
             draft_id = uuid.uuid4().hex[:12]
             img = None
             if settings.images:
