@@ -21,7 +21,7 @@
     </nav>
 
     <section class="hero">
-      <div class="hero-orbs" aria-hidden="true"><div class="hero-orb"></div><div class="hero-orb"></div></div>
+      <div class="hero-orbs" aria-hidden="true"><div class="hero-orb"></div><div class="hero-orb"></div><div class="hero-orb"></div></div>
       <h1>LinkedIn posts that sound like <em>you</em>, powered by today's news</h1>
       <p>Paste a meeting transcript or your notes on any topic. PostPilot learns your voice, finds the latest headlines about what you care about, and drafts ready-to-publish posts — each with a license-safe image attached.</p>
       <a class="btn btn-primary" href="/app">Generate posts</a>
@@ -55,7 +55,7 @@
             <path d="M50 96 a16 16 0 0 1 32 0" stroke="#4a5474"/>
             <rect x="112" y="66" width="5" height="28" rx="2.5" fill="#333c54"/>
             <rect x="124" y="52" width="5" height="56" rx="2.5" fill="#4a5474"/>
-            <rect x="136" y="40" width="5" height="80" rx="2.5" fill="#4f8ff7" opacity="0.85"/>
+            <rect x="136" y="40" width="5" height="80" rx="2.5" fill="#8b5cf6" opacity="0.9"/>
             <rect x="148" y="56" width="5" height="48" rx="2.5" fill="#4a5474"/>
             <rect x="160" y="68" width="5" height="24" rx="2.5" fill="#333c54"/>
           </svg>
@@ -69,11 +69,56 @@
             <rect x="36" y="30" width="120" height="100" rx="9" stroke="#4a5474" fill="#12151d"/>
             <circle cx="70" cy="60" r="10" stroke="#333c54"/>
             <path d="M44 112 L78 82 L98 98 L122 72 L148 96" stroke="#4a5474" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="140" y="92" width="44" height="38" rx="8" fill="#4f8ff7" opacity="0.9"/>
+            <rect x="140" y="92" width="44" height="38" rx="8" fill="#f97316" opacity="0.9"/>
             <path d="M152 111 l8 8 l14 -16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
           <h3>Ships with one click</h3>
           <p>A license-safe image is picked to match each draft. Save the keepers to your library and post straight to LinkedIn.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bento-section" id="inside">
+      <h2 class="lin-head"><strong>Every detail pulls its weight.</strong> Small systems working together, so posting takes minutes instead of an afternoon.</h2>
+      <div class="bento">
+        <div class="bento-card b-span4">
+          <div class="b-vignette v-lib">
+            <div class="lib-row"><span class="lr-line" style="width:64%"></span><span class="badge" id="lib-flip">draft</span></div>
+            <div class="lib-row"><span class="lr-line" style="width:78%"></span><span class="badge ok">posted</span></div>
+            <div class="lib-row"><span class="lr-line" style="width:52%"></span><span class="badge">draft</span></div>
+          </div>
+          <h3>A library for the keepers</h3>
+          <p>Save the drafts worth keeping, post them when the timing's right, and always see what's already gone out.</p>
+        </div>
+
+        <div class="bento-card b-span2">
+          <div class="b-vignette v-words">
+            <div class="w-labels"><span>100 words</span><span>200 words</span></div>
+            <div class="w-track"><div class="w-fill"></div></div>
+          </div>
+          <h3>Any length you need</h3>
+          <p>Set a word range — from a two-liner to an article draft.</p>
+        </div>
+
+        <div class="bento-card b-span2">
+          <div class="b-vignette v-tones" id="v-tones">
+            <span class="tone-pill on">Insightful</span>
+            <span class="tone-pill">Casual</span>
+            <span class="tone-pill">Bold</span>
+            <span class="tone-pill">Technical</span>
+          </div>
+          <h3>Your tone, dialed in</h3>
+          <p>Four voices, one dropdown away.</p>
+        </div>
+
+        <div class="bento-card b-span4">
+          <div class="b-vignette v-src">
+            <div class="src-line s1">🔗 Source: reuters.com/business/housing-inventory-climbs…</div>
+            <div class="src-line s2">🖼️ Photo by Anna K. on Pexels — Pexels License, free commercial use</div>
+            <div class="src-line s3">✓ Linked and credited automatically in every draft</div>
+          </div>
+          <h3>Receipts included</h3>
+          <p>Every post links its source article, and every image ships with its license and photographer credit.</p>
         </div>
       </div>
     </section>
@@ -181,7 +226,15 @@ Source: https://www.realtor.com/june-housing-inventory-report
   </footer>
 
   <style>
-    .demo-wrap { max-width: 760px; margin: 44px auto 0; }
+    .demo-wrap { max-width: 760px; margin: 44px auto 0; position: relative; }
+    .demo-wrap::before {
+      content: ""; position: absolute; inset: -50px -70px; z-index: -1;
+      background:
+        radial-gradient(ellipse 45% 55% at 22% 40%, rgba(79,143,247,0.16), transparent),
+        radial-gradient(ellipse 40% 50% at 62% 70%, rgba(139,92,246,0.13), transparent),
+        radial-gradient(ellipse 35% 45% at 88% 30%, rgba(236,72,153,0.10), transparent);
+      filter: blur(38px); pointer-events: none;
+    }
     .demo-cols { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
     @media (max-width: 640px) { .demo-cols { grid-template-columns: 1fr; } }
     .demo-panel {
@@ -406,19 +459,40 @@ Source: https://www.realtor.com/june-housing-inventory-report
     })();
   })();
 
+  // Bento vignette loops
+  (() => {
+    const pills = document.querySelectorAll("#v-tones .tone-pill");
+    if (pills.length) {
+      let t = 0;
+      setInterval(() => {
+        pills[t].classList.remove("on");
+        t = (t + 1) % pills.length;
+        pills[t].classList.add("on");
+      }, 1600);
+    }
+
+    const flip = document.getElementById("lib-flip");
+    if (flip) {
+      setInterval(() => {
+        const posted = flip.classList.toggle("ok");
+        flip.textContent = posted ? "posted" : "draft";
+      }, 3200);
+    }
+  })();
+
   // Subtle scroll-reveal for sections
   (() => {
     const els = document.querySelectorAll(
-      ".lin-item, .steps li, .examples .post-card, .demo-wrap, .lin-head, .steps h2, .examples h2");
+      ".lin-item, .steps li, .examples .post-card, .demo-wrap, .lin-head, .steps h2, .examples h2, .bento-card");
     els.forEach((el, i) => {
       el.classList.add("reveal");
-      el.style.transitionDelay = (i % 3) * 60 + "ms";
+      el.style.transitionDelay = (i % 3) * 50 + "ms";
     });
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
-        if (e.isIntersecting) { e.target.classList.add("revealed"); obs.unobserve(e.target); }
+        e.target.classList.toggle("revealed", e.isIntersecting);
       });
-    }, { threshold: 0.12 });
+    }, { threshold: 0, rootMargin: "0px 0px -40px 0px" });
     els.forEach((el) => obs.observe(el));
   })();
   </script>
