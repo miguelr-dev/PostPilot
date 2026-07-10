@@ -98,6 +98,7 @@
           <h3>Variant ${i + 1}</h3>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-ghost btn-sm copy-btn">Copy text</button>
+            <button class="btn btn-ghost btn-sm save-btn">Save to library</button>
             <button class="btn btn-primary btn-sm li-post-btn">Post to LinkedIn</button>
           </div>
         </div>
@@ -115,6 +116,24 @@
             copyBtn.classList.remove("copied");
           }, 1800);
         });
+      });
+
+      const saveBtn = card.querySelector(".save-btn");
+      saveBtn.addEventListener("click", async () => {
+        saveBtn.disabled = true;
+        try {
+          const r = await fetch("/api/library/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(d),
+          });
+          if (!r.ok) throw new Error((await r.json()).error || "Save failed");
+          saveBtn.textContent = "Saved ✓";
+          saveBtn.classList.add("copied");
+        } catch (e) {
+          saveBtn.disabled = false;
+          setError(e.message);
+        }
       });
 
       const liPostBtn = card.querySelector(".li-post-btn");

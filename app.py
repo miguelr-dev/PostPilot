@@ -190,12 +190,7 @@ def _run_job(job_id, settings, transcript_text):
                         img["local_path"] = unique
                 except Exception as e:
                     print(f"  [warn] image step failed ({e}).")
-            draft = _serialize_draft(text, topic, img, draft_id)
-            try:
-                _save_draft(draft)
-            except Exception as e:
-                print(f"  [warn] could not save draft to library ({e}).")
-            drafts.append(draft)
+            drafts.append(_serialize_draft(text, topic, img, draft_id))
 
         result = {
             "drafts": drafts,
@@ -284,6 +279,21 @@ def api_status(job_id):
         if job is None:
             return jsonify({"error": "unknown job"}), 404
         return jsonify(job)
+
+
+@app.post("/api/library/save")
+def api_library_save():
+    d = request.get_json(silent=True) or {}
+    if not d.get("id") or not (d.get("text") or "").strip():
+        return jsonify({"error": "Invalid draft."}), 400
+    d.setdefault("source", {})
+    d.setdefault("created",
+                 datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    try:
+        _save_draft(d)
+    except sqlite3.IntegrityError:
+        return jsonify({"ok": True, "already_saved": True})
+    return jsonify({"ok": True})
 
 
 @app.get("/api/library")
