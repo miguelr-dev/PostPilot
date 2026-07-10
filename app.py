@@ -207,4 +207,4 @@ if __name__ == "__main__":
     print(f"LinkedIn Post Generator running at http://localhost:{port}")
     if not g.llm_available():
         print("[info] No ANTHROPIC_API_KEY - posts will use the template fallback.")
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
