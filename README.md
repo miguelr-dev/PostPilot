@@ -36,6 +36,9 @@ Set these as environment variables before starting the server:
 | `PEXELS_API_KEY` | Better stock images (falls back to Openverse without it) |
 | `LLM_MODEL` | Override the Claude model (default: `claude-sonnet-4-5`) |
 | `PORT` | Change the web server port (default: 5000) |
+| `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` | From your LinkedIn developer app — enables "Connect LinkedIn" and one-click posting |
+| `BASE_URL` | Public URL of the site (e.g. `https://postpilot-nsks.onrender.com`), used for the OAuth redirect. Default: `http://localhost:5000` |
+| `SECRET_KEY` | Random string for login sessions (generate one; without it, logins reset on every server restart) |
 
 PowerShell example:
 

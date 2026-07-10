@@ -9,15 +9,33 @@ Env (optional): ANTHROPIC_API_KEY (AI-written posts), TAVILY_API_KEY,
 PEXELS_API_KEY, LLM_MODEL, PORT.
 """
 import os
+import secrets
 import threading
 import uuid
 
-from flask import Flask, jsonify, request, send_from_directory
+import requests
+from flask import (Flask, jsonify, redirect, request, send_from_directory,
+                   session)
 
 import generator as g
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder=None)
+# Needed for login sessions. Set SECRET_KEY in production so logins
+# survive server restarts.
+app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
+# Keep users signed in for ~60 days (matches LinkedIn token lifetime)
+from datetime import timedelta
+app.permanent_session_lifetime = timedelta(days=60)
+
+# --- LinkedIn OAuth config (set these env vars to enable posting) ---
+LI_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID", "")
+LI_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET", "")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5000").rstrip("/")
+LI_REDIRECT_URI = BASE_URL + "/auth/callback"
+app.config.update(SESSION_COOKIE_SECURE=BASE_URL.startswith("https"),
+                  SESSION_COOKIE_HTTPONLY=True,
+                  SESSION_COOKIE_SAMESITE="Lax")
 
 # In-memory job store: jobs run in a thread so the browser can poll progress
 # instead of holding one long request open.
@@ -180,6 +198,162 @@ def api_health():
     return jsonify({"ok": True, "llm": g.llm_available(),
                     "pexels": bool(g.PEXELS_API_KEY),
                     "tavily": bool(g.TAVILY_API_KEY)})
+
+
+# --------------------------- LinkedIn ------------------------------------
+
+@app.get("/auth/linkedin")
+def auth_linkedin():
+    if not LI_CLIENT_ID:
+        return ("LinkedIn is not configured on this server "
+                "(missing LINKEDIN_CLIENT_ID).", 503)
+    state = secrets.token_urlsafe(16)
+    session["li_state"] = state
+    from urllib.parse import urlencode
+    params = urlencode({
+        "response_type": "code",
+        "client_id": LI_CLIENT_ID,
+        "redirect_uri": LI_REDIRECT_URI,
+        "state": state,
+        "scope": "openid profile w_member_social",
+    })
+    return redirect("https://www.linkedin.com/oauth/v2/authorization?" + params)
+
+
+@app.get("/auth/callback")
+def auth_callback():
+    err = request.args.get("error_description") or request.args.get("error")
+    if err:
+        return redirect("/app?li_error=" + err[:200])
+    if request.args.get("state") != session.pop("li_state", None):
+        return redirect("/app?li_error=state_mismatch")
+    code = request.args.get("code", "")
+    try:
+        r = requests.post("https://www.linkedin.com/oauth/v2/accessToken",
+                          data={"grant_type": "authorization_code",
+                                "code": code,
+                                "redirect_uri": LI_REDIRECT_URI,
+                                "client_id": LI_CLIENT_ID,
+                                "client_secret": LI_CLIENT_SECRET},
+                          timeout=20)
+        r.raise_for_status()
+        token = r.json()["access_token"]
+        u = requests.get("https://api.linkedin.com/v2/userinfo",
+                         headers={"Authorization": f"Bearer {token}"},
+                         timeout=20)
+        u.raise_for_status()
+        info = u.json()
+        session.permanent = True
+        session["li_token"] = token
+        session["li_sub"] = info.get("sub", "")
+        session["li_name"] = info.get("name", "LinkedIn user")
+        return redirect("/app")
+    except Exception as e:
+        return redirect("/app?li_error=" + str(e)[:200])
+
+
+@app.get("/api/linkedin/status")
+def linkedin_status():
+    return jsonify({
+        "configured": bool(LI_CLIENT_ID),
+        "connected": bool(session.get("li_token")),
+        "name": session.get("li_name", ""),
+    })
+
+
+@app.post("/api/linkedin/logout")
+def linkedin_logout():
+    for k in ("li_token", "li_sub", "li_name"):
+        session.pop(k, None)
+    return jsonify({"ok": True})
+
+
+def _li_upload_image(token, author_urn, local_path):
+    """Register + upload an image asset. Returns the asset URN."""
+    reg = requests.post(
+        "https://api.linkedin.com/v2/assets?action=registerUpload",
+        headers={"Authorization": f"Bearer {token}",
+                 "X-Restli-Protocol-Version": "2.0.0"},
+        json={"registerUploadRequest": {
+            "recipes": ["urn:li:digitalmediaRecipe:feedshare-image"],
+            "owner": author_urn,
+            "serviceRelationships": [{
+                "relationshipType": "OWNER",
+                "identifier": "urn:li:userGeneratedContent"}]}},
+        timeout=20)
+    reg.raise_for_status()
+    v = reg.json()["value"]
+    upload_url = v["uploadMechanism"][
+        "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]["uploadUrl"]
+    asset = v["asset"]
+    with open(local_path, "rb") as f:
+        up = requests.put(upload_url, data=f.read(),
+                          headers={"Authorization": f"Bearer {token}"},
+                          timeout=60)
+    up.raise_for_status()
+    return asset
+
+
+@app.post("/api/linkedin/post")
+def linkedin_post():
+    token = session.get("li_token")
+    sub = session.get("li_sub")
+    if not token or not sub:
+        return jsonify({"error": "Not connected to LinkedIn."}), 401
+    data = request.get_json(silent=True) or {}
+    text = (data.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Post text is empty."}), 400
+    author = f"urn:li:person:{sub}"
+
+    media = []
+    category = "NONE"
+    image_src = data.get("image_src") or ""
+    if image_src.startswith("/images/"):
+        local = os.path.join(BASE_DIR, g.IMAGE_DIR,
+                             os.path.basename(image_src))
+        if os.path.exists(local):
+            try:
+                asset = _li_upload_image(token, author, local)
+                media = [{"status": "READY", "media": asset}]
+                category = "IMAGE"
+            except Exception as e:
+                print(f"  [warn] LinkedIn image upload failed ({e}); "
+                      f"posting text only.")
+
+    body = {
+        "author": author,
+        "lifecycleState": "PUBLISHED",
+        "specificContent": {"com.linkedin.ugc.ShareContent": {
+            "shareCommentary": {"text": text},
+            "shareMediaCategory": category,
+            **({"media": media} if media else {}),
+        }},
+        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+    }
+    try:
+        r = requests.post("https://api.linkedin.com/v2/ugcPosts",
+                          headers={"Authorization": f"Bearer {token}",
+                                   "X-Restli-Protocol-Version": "2.0.0"},
+                          json=body, timeout=30)
+        if r.status_code == 401:
+            for k in ("li_token", "li_sub", "li_name"):
+                session.pop(k, None)
+            return jsonify({"error": "LinkedIn session expired - "
+                                     "please reconnect."}), 401
+        r.raise_for_status()
+        post_id = r.headers.get("x-restli-id") or r.json().get("id", "")
+        return jsonify({"ok": True, "post_id": post_id,
+                        "with_image": category == "IMAGE"})
+    except requests.HTTPError as e:
+        detail = ""
+        try:
+            detail = e.response.json().get("message", "")[:300]
+        except Exception:
+            pass
+        return jsonify({"error": f"LinkedIn rejected the post. {detail}"}), 502
+    except Exception as e:
+        return jsonify({"error": str(e)[:300]}), 502
 
 
 # --------------------------- Static pages ---------------------------------
